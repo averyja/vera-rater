@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VERA Image Rater</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+
+  :root {
+    --bg: #0f1117;
+    --surface: #181c27;
+    --surface2: #1e2333;
+    --border: #2a3050;
+    --accent: #4f8ef7;
+    --accent2: #7c5cfc;
+    --good: #2ecc71;
+    --okay: #f39c12;
+    --bad: #e74c3c;
+    --text: #dde3f0;
+    --muted: #6b7594;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* ── SPLASH ── */
+  #splash {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    gap: 1.75rem;
+    padding: 2rem;
+    max-width: 500px;
+    width: 100%;
+    text-align: center;
+  }
+  .logo { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.3em; color: var(--accent); text-transform: uppercase; opacity: 0.8; }
+  .splash-title { font-size: 2.2rem; font-weight: 300; letter-spacing: -0.02em; line-height: 1.2; }
+  .splash-title span { color: var(--accent); font-weight: 600; }
+  .splash-sub { color: var(--muted); font-size: 0.92rem; line-height: 1.7; }
+
+  .field-group { width: 100%; display: flex; flex-direction: column; gap: 0.45rem; text-align: left; }
+  .field-group label { font-size: 0.75rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); font-family: var(--mono); }
+  .field-group input[type="text"] {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+    color: var(--text); font-family: var(--sans); font-size: 1rem;
+    padding: 0.75rem 1rem; width: 100%; outline: none; transition: border-color 0.2s;
+  }
+  .field-group input[type="text"]:focus { border-color: var(--accent); }
+
+  .start-btn {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border: none; border-radius: 10px; color: #fff; cursor: pointer;
+    font-family: var(--sans); font-size: 1rem; font-weight: 600;
+    letter-spacing: 0.04em; padding: 0.9rem 2.5rem; width: 100%;
+    transition: opacity 0.2s, transform 0.1s;
+  }
+  .start-btn:hover:not(:disabled) { opacity: 0.9; transform: translateY(-1px); }
+  .start-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+  .loading-msg {
+    color: var(--muted); font-family: var(--mono); font-size: 0.8rem;
+    display: none; align-items: center; gap: 0.5rem;
+  }
+  .spinner {
+    width: 14px; height: 14px; border: 2px solid var(--border);
+    border-top-color: var(--accent); border-radius: 50%;
+    animation: spin 0.7s linear infinite; flex-shrink: 0;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── RATER ── */
+  #rater { display: none; width: 100%; max-width: 1100px; padding: 1rem 1.5rem 2rem; }
+
+  .top-bar {
+    display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;
+  }
+  .progress-bar-bg { flex: 1; height: 4px; background: var(--surface2); border-radius: 999px; overflow: hidden; }
+  .progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 999px; transition: width 0.3s ease; }
+  .progress-label { font-family: var(--mono); font-size: 0.78rem; color: var(--muted); white-space: nowrap; }
+
+  .main-grid { display: grid; grid-template-columns: 1fr 360px; gap: 1.5rem; align-items: start; }
+
+  /* Image panel */
+  .image-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; }
+  .image-header { padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .image-filename { font-family: var(--mono); font-size: 0.78rem; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 80%; }
+  .img-container { display: flex; align-items: center; justify-content: center; background: #080a10; min-height: 420px; max-height: 560px; }
+  #currentImg { max-width: 100%; max-height: 560px; object-fit: contain; display: block; }
+  .nav-row { display: flex; gap: 0.5rem; padding: 0.75rem 1rem; border-top: 1px solid var(--border); }
+  .nav-btn { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: var(--muted); cursor: pointer; font-family: var(--sans); font-size: 0.85rem; padding: 0.5rem 1rem; transition: all 0.15s; }
+  .nav-btn:hover { color: var(--text); border-color: var(--accent); }
+  .next-btn { flex: 1; background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; font-size: 0.9rem; }
+  .next-btn:hover { background: #3a7de8; border-color: #3a7de8; color: #fff; }
+
+  /* Ratings panel */
+  .ratings-panel { display: flex; flex-direction: column; gap: 1rem; }
+  .rating-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1rem 1.1rem; }
+  .rating-title { font-size: 0.72rem; font-family: var(--mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.65rem; display: flex; align-items: center; justify-content: space-between; }
+  .rating-key { background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; font-size: 0.65rem; padding: 0.1em 0.4em; color: #555e7a; }
+
+  .overall-group { display: flex; gap: 0.4rem; }
+  .overall-btn { flex: 1; border: 2px solid var(--border); border-radius: 8px; cursor: pointer; font-family: var(--sans); font-size: 0.85rem; font-weight: 600; padding: 0.6rem 0; transition: all 0.15s; background: var(--surface2); color: var(--muted); letter-spacing: 0.04em; }
+  .overall-btn[data-val="good"]:hover, .overall-btn[data-val="good"].selected { background: rgba(46,204,113,0.15); border-color: var(--good); color: var(--good); }
+  .overall-btn[data-val="okay"]:hover, .overall-btn[data-val="okay"].selected { background: rgba(243,156,18,0.15); border-color: var(--okay); color: var(--okay); }
+  .overall-btn[data-val="bad"]:hover,  .overall-btn[data-val="bad"].selected  { background: rgba(231,76,60,0.15);  border-color: var(--bad);  color: var(--bad);  }
+
+  .scale-group { display: flex; gap: 0.35rem; align-items: center; }
+  .scale-btn { flex: 1; aspect-ratio: 1; border: 2px solid var(--border); border-radius: 8px; cursor: pointer; font-family: var(--mono); font-size: 0.95rem; font-weight: 500; transition: all 0.15s; background: var(--surface2); color: var(--muted); display: flex; align-items: center; justify-content: center; max-width: 52px; }
+  .scale-btn:hover  { border-color: var(--accent); color: var(--accent); background: rgba(79,142,247,0.08); }
+  .scale-btn.selected { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .scale-labels { display: flex; justify-content: space-between; margin-top: 0.35rem; font-size: 0.65rem; color: #444e6a; font-family: var(--mono); }
+
+  .comment-input { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: var(--sans); font-size: 0.88rem; padding: 0.65rem 0.85rem; resize: vertical; width: 100%; min-height: 64px; outline: none; transition: border-color 0.2s; line-height: 1.5; }
+  .comment-input:focus { border-color: var(--accent); }
+  .comment-input::placeholder { color: #3a4260; }
+
+  .kb-hint { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 0.75rem 1rem; font-size: 0.72rem; color: #444e6a; font-family: var(--mono); line-height: 1.9; }
+  .kb-hint strong { color: var(--muted); }
+
+  /* Save status indicator */
+  .save-status { font-family: var(--mono); font-size: 0.72rem; padding: 0.4rem 0.75rem; border-radius: 6px; transition: all 0.3s; text-align: center; }
+  .save-status.saving  { background: rgba(79,142,247,0.12); color: var(--accent); border: 1px solid rgba(79,142,247,0.3); }
+  .save-status.saved   { background: rgba(46,204,113,0.12); color: var(--good);   border: 1px solid rgba(46,204,113,0.3); }
+  .save-status.error   { background: rgba(231,76,60,0.12);  color: var(--bad);    border: 1px solid rgba(231,76,60,0.3);  }
+  .save-status.idle    { background: transparent; color: transparent; border: 1px solid transparent; }
+
+  .rated-badge { font-family: var(--mono); font-size: 0.65rem; background: rgba(46,204,113,0.15); border: 1px solid rgba(46,204,113,0.3); color: var(--good); border-radius: 4px; padding: 0.15em 0.5em; }
+
+  /* Done screen */
+  #doneScreen { display: none; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; gap: 1.5rem; padding: 2rem; text-align: center; max-width: 480px; }
+
+  /* Error screen */
+  #errorScreen { display: none; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; gap: 1rem; padding: 2rem; text-align: center; max-width: 480px; }
+  .error-code { font-family: var(--mono); font-size: 0.75rem; color: var(--bad); background: rgba(231,76,60,0.1); border: 1px solid rgba(231,76,60,0.2); border-radius: 8px; padding: 1rem; width: 100%; text-align: left; line-height: 1.8; }
+
+  @media (max-width: 760px) { .main-grid { grid-template-columns: 1fr; } .img-container { min-height: 260px; } }
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div id="splash">
+  <div class="logo">VERA Study · OSU-CHS</div>
+  <h1 class="splash-title">Image<br><span>Quality Rater</span></h1>
+  <p class="splash-sub">Rate AI-generated stimulus images for the VERA study. Your ratings save automatically to a shared spreadsheet.</p>
+
+  <div class="field-group">
+    <label>Your name</label>
+    <input type="text" id="raterName" placeholder="e.g. Jason, Allison…" autocomplete="off" />
+  </div>
+
+  <button class="start-btn" id="startBtn" disabled>Loading images…</button>
+  <div class="loading-msg" id="loadingMsg">
+    <div class="spinner"></div>
+    <span id="loadingText">Fetching image list…</span>
+  </div>
+</div>
+
+<!-- RATER -->
+<div id="rater">
+  <div class="top-bar">
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" id="progressFill" style="width:0%"></div>
+    </div>
+    <div class="progress-label" id="progressLabel">0 / 0</div>
+  </div>
+
+  <div class="main-grid">
+    <div class="image-panel">
+      <div class="image-header">
+        <span class="image-filename" id="imgFilename">—</span>
+        <span class="rated-badge" id="ratedBadge" style="display:none">✓ Saved</span>
+      </div>
+      <div class="img-container">
+        <img id="currentImg" src="" alt="stimulus image" />
+      </div>
+      <div class="nav-row">
+        <button class="nav-btn" onclick="navigate(-1)">← Back</button>
+        <button class="nav-btn next-btn" id="nextBtn" onclick="nextImage()">Next →</button>
+      </div>
+    </div>
+
+    <div class="ratings-panel">
+
+      <div class="rating-card">
+        <div class="rating-title">Overall Quality <span class="rating-key">G / O / B</span></div>
+        <div class="overall-group">
+          <button class="overall-btn" data-val="good" onclick="setOverall('good')">👍 Good</button>
+          <button class="overall-btn" data-val="okay" onclick="setOverall('okay')">😐 Okay</button>
+          <button class="overall-btn" data-val="bad"  onclick="setOverall('bad')">👎 Bad</button>
+        </div>
+      </div>
+
+      <div class="rating-card">
+        <div class="rating-title">Pleasantness <span class="rating-key">1–5</span></div>
+        <div class="scale-group">
+          <button class="scale-btn" data-dim="pleasantness" data-val="1" onclick="setScale('pleasantness',1)">1</button>
+          <button class="scale-btn" data-dim="pleasantness" data-val="2" onclick="setScale('pleasantness',2)">2</button>
+          <button class="scale-btn" data-dim="pleasantness" data-val="3" onclick="setScale('pleasantness',3)">3</button>
+          <button class="scale-btn" data-dim="pleasantness" data-val="4" onclick="setScale('pleasantness',4)">4</button>
+          <button class="scale-btn" data-dim="pleasantness" data-val="5" onclick="setScale('pleasantness',5)">5</button>
+        </div>
+        <div class="scale-labels"><span>Unpleasant</span><span>Very pleasant</span></div>
+      </div>
+
+      <div class="rating-card">
+        <div class="rating-title">AI Obviousness <span class="rating-key">Shift+1–5</span></div>
+        <div class="scale-group">
+          <button class="scale-btn" data-dim="ai_obvious" data-val="1" onclick="setScale('ai_obvious',1)">1</button>
+          <button class="scale-btn" data-dim="ai_obvious" data-val="2" onclick="setScale('ai_obvious',2)">2</button>
+          <button class="scale-btn" data-dim="ai_obvious" data-val="3" onclick="setScale('ai_obvious',3)">3</button>
+          <button class="scale-btn" data-dim="ai_obvious" data-val="4" onclick="setScale('ai_obvious',4)">4</button>
+          <button class="scale-btn" data-dim="ai_obvious" data-val="5" onclick="setScale('ai_obvious',5)">5</button>
+        </div>
+        <div class="scale-labels"><span>Looks real</span><span>Obvious AI</span></div>
+      </div>
+
+      <div class="rating-card">
+        <div class="rating-title">Weirdness / Artifacts <span class="rating-key">Ctrl+1–5</span></div>
+        <div class="scale-group">
+          <button class="scale-btn" data-dim="weirdness" data-val="1" onclick="setScale('weirdness',1)">1</button>
+          <button class="scale-btn" data-dim="weirdness" data-val="2" onclick="setScale('weirdness',2)">2</button>
+          <button class="scale-btn" data-dim="weirdness" data-val="3" onclick="setScale('weirdness',3)">3</button>
+          <button class="scale-btn" data-dim="weirdness" data-val="4" onclick="setScale('weirdness',4)">4</button>
+          <button class="scale-btn" data-dim="weirdness" data-val="5" onclick="setScale('weirdness',5)">5</button>
+        </div>
+        <div class="scale-labels"><span>None</span><span>Very weird</span></div>
+      </div>
+
+      <div class="rating-card">
+        <div class="rating-title">Comment <span style="color:#333d55">(optional)</span></div>
+        <textarea class="comment-input" id="commentBox" placeholder="e.g. hands look wrong, odd background…"></textarea>
+      </div>
+
+      <div class="save-status idle" id="saveStatus">—</div>
+
+      <div class="kb-hint">
+        <strong>Keyboard shortcuts</strong><br>
+        G / O / B → Overall quality<br>
+        1–5 → Pleasantness<br>
+        Shift+1–5 → AI Obviousness<br>
+        Ctrl+1–5 → Weirdness<br>
+        Enter / → → Next image<br>
+        ← → Go back
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- DONE -->
+<div id="doneScreen">
+  <div style="font-size:3.5rem">🎉</div>
+  <h2 style="font-size:2rem; font-weight:300;">All done!</h2>
+  <p style="color:var(--muted); line-height:1.7; max-width:380px;">You've gone through all <strong id="doneCount"></strong> images. Your ratings have been saved to the shared spreadsheet. Thank you!</p>
+  <button class="start-btn" style="max-width:300px" onclick="location.reload()">Start over</button>
+</div>
+
+<!-- ERROR -->
+<div id="errorScreen">
+  <div style="font-size:3rem">⚠️</div>
+  <h2 style="font-size:1.5rem; font-weight:400; color: var(--bad);">Could not load images</h2>
+  <div class="error-code" id="errorMsg"></div>
+  <p style="color:var(--muted); font-size:0.85rem; line-height:1.7;">Make sure <code>manifest.json</code> exists in the repo root and GitHub Pages is enabled.</p>
+</div>
+
+<script>
+// ─────────────────────────────────────────────────────────────────
+// CONFIGURATION — replace APPS_SCRIPT_URL after you deploy the script
+// ─────────────────────────────────────────────────────────────────
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbygVjz66PMT6XCAMKsWmpxa7Yv15_eASHID8T758pyFaQBHok4N2Mo3myU6qDnJhy38/exec';
+const IMAGES_PATH = 'images/';   // folder in the repo
+
+// ─────────────────────────────────────────────────────────────────
+let images = [];       // array of filenames from manifest.json
+let ratings = {};      // local cache { filename: ratingObj }
+let currentIndex = 0;
+let raterName = '';
+
+// ─────────────────────────────────────────────────────────────────
+// INIT — load manifest on page load
+// ─────────────────────────────────────────────────────────────────
+window.addEventListener('load', async () => {
+  document.getElementById('loadingMsg').style.display = 'flex';
+  try {
+    const res = await fetch('manifest.json?_=' + Date.now());
+    if (!res.ok) throw new Error(`manifest.json returned HTTP ${res.status}`);
+    const data = await res.json();
+    if (!Array.isArray(data) || data.length === 0) throw new Error('manifest.json is empty or not an array');
+    images = data;
+    document.getElementById('loadingText').textContent = `${images.length} images ready`;
+    document.getElementById('startBtn').textContent = 'Start Rating →';
+    document.getElementById('startBtn').disabled = false;
+  } catch(err) {
+    document.getElementById('splash').style.display = 'none';
+    const es = document.getElementById('errorScreen');
+    es.style.display = 'flex';
+    document.getElementById('errorMsg').textContent = err.message;
+  }
+  document.getElementById('loadingMsg').style.display = 'none';
+});
+
+document.getElementById('raterName').addEventListener('input', () => {
+  if (images.length > 0) {
+    document.getElementById('startBtn').disabled =
+      document.getElementById('raterName').value.trim().length === 0;
+  }
+});
+
+document.getElementById('startBtn').addEventListener('click', () => {
+  raterName = document.getElementById('raterName').value.trim();
+  if (!raterName) return;
+  document.getElementById('splash').style.display = 'none';
+  document.getElementById('rater').style.display = 'block';
+  loadImage(0);
+});
+
+// ─────────────────────────────────────────────────────────────────
+// IMAGE LOADING
+// ─────────────────────────────────────────────────────────────────
+function loadImage(idx) {
+  if (idx < 0 || idx >= images.length) return;
+  currentIndex = idx;
+  const fname = images[idx];
+
+  document.getElementById('currentImg').src = IMAGES_PATH + fname;
+  document.getElementById('imgFilename').textContent = fname;
+
+  // Preload next
+  if (idx + 1 < images.length) {
+    const pre = new Image();
+    pre.src = IMAGES_PATH + images[idx + 1];
+  }
+
+  // Update progress
+  updateProgress();
+
+  // Restore any cached ratings for this image
+  const r = ratings[fname] || {};
+  restoreRatings(r);
+  document.getElementById('ratedBadge').style.display = r._saved ? 'inline' : 'none';
+  setSaveStatus('idle');
+}
+
+function updateProgress() {
+  const saved = Object.values(ratings).filter(r => r._saved).length;
+  const pct = (saved / images.length) * 100;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressLabel').textContent = `${saved} / ${images.length} saved`;
+}
+
+function restoreRatings(r) {
+  document.querySelectorAll('.overall-btn').forEach(b =>
+    b.classList.toggle('selected', b.dataset.val === r.overall));
+  ['pleasantness','ai_obvious','weirdness'].forEach(dim =>
+    document.querySelectorAll(`.scale-btn[data-dim="${dim}"]`).forEach(b =>
+      b.classList.toggle('selected', parseInt(b.dataset.val) === r[dim])));
+  document.getElementById('commentBox').value = r.comment || '';
+}
+
+// ─────────────────────────────────────────────────────────────────
+// RATING CONTROLS
+// ─────────────────────────────────────────────────────────────────
+function setOverall(val) {
+  document.querySelectorAll('.overall-btn').forEach(b =>
+    b.classList.toggle('selected', b.dataset.val === val));
+}
+function setScale(dim, val) {
+  document.querySelectorAll(`.scale-btn[data-dim="${dim}"]`).forEach(b =>
+    b.classList.toggle('selected', parseInt(b.dataset.val) === val));
+}
+
+// ─────────────────────────────────────────────────────────────────
+// NAVIGATION
+// ─────────────────────────────────────────────────────────────────
+function navigate(dir) {
+  submitRating();   // save current before moving
+  loadImage(currentIndex + dir);
+}
+
+function nextImage() {
+  submitRating();
+  if (currentIndex + 1 >= images.length) {
+    document.getElementById('rater').style.display = 'none';
+    document.getElementById('doneScreen').style.display = 'flex';
+    document.getElementById('doneCount').textContent = images.length;
+    return;
+  }
+  loadImage(currentIndex + 1);
+}
+
+// ─────────────────────────────────────────────────────────────────
+// SUBMIT TO APPS SCRIPT
+// ─────────────────────────────────────────────────────────────────
+function gatherRatings() {
+  return {
+    filename:     images[currentIndex],
+    rater:        raterName,
+    overall:      document.querySelector('.overall-btn.selected')?.dataset.val || '',
+    pleasantness: parseInt(document.querySelector('.scale-btn[data-dim="pleasantness"].selected')?.dataset.val) || '',
+    ai_obvious:   parseInt(document.querySelector('.scale-btn[data-dim="ai_obvious"].selected')?.dataset.val) || '',
+    weirdness:    parseInt(document.querySelector('.scale-btn[data-dim="weirdness"].selected')?.dataset.val) || '',
+    comment:      document.getElementById('commentBox').value.trim(),
+    timestamp:    new Date().toISOString()
+  };
+}
+
+async function submitRating() {
+  const r = gatherRatings();
+  // Only submit if at least one rating was given
+  if (!r.overall && !r.pleasantness && !r.ai_obvious && !r.weirdness && !r.comment) return;
+
+  // Cache locally
+  ratings[r.filename] = { ...r, _saved: false };
+
+  // Skip actual POST if URL not configured
+  if (APPS_SCRIPT_URL === 'PASTE_YOUR_APPS_SCRIPT_URL_HERE') {
+    console.warn('Apps Script URL not set — rating logged locally only:', r);
+    ratings[r.filename]._saved = true;
+    updateProgress();
+    setSaveStatus('saved');
+    document.getElementById('ratedBadge').style.display = 'inline';
+    return;
+  }
+
+  setSaveStatus('saving');
+  try {
+    // no-cors: Apps Script doesn't return CORS headers, but the POST still lands
+    await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify(r)
+    });
+    ratings[r.filename]._saved = true;
+    setSaveStatus('saved');
+    document.getElementById('ratedBadge').style.display = 'inline';
+  } catch(err) {
+    setSaveStatus('error');
+    console.error('Save failed:', err);
+  }
+  updateProgress();
+}
+
+function setSaveStatus(state) {
+  const el = document.getElementById('saveStatus');
+  el.className = 'save-status ' + state;
+  const labels = { saving: '⏳ Saving…', saved: '✓ Saved to sheet', error: '✗ Save failed — check console', idle: '' };
+  el.textContent = labels[state] || '';
+}
+
+// ─────────────────────────────────────────────────────────────────
+// KEYBOARD SHORTCUTS
+// ─────────────────────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') return;
+  const key = e.key.toLowerCase();
+  if (key === 'g') { setOverall('good'); return; }
+  if (key === 'o') { setOverall('okay'); return; }
+  if (key === 'b') { setOverall('bad');  return; }
+  if (['1','2','3','4','5'].includes(e.key)) {
+    const val = parseInt(e.key);
+    if (e.shiftKey)              setScale('ai_obvious', val);
+    else if (e.ctrlKey || e.metaKey) { e.preventDefault(); setScale('weirdness', val); }
+    else                          setScale('pleasantness', val);
+    return;
+  }
+  if (key === 'enter' || key === 'arrowright') { nextImage(); return; }
+  if (key === 'arrowleft') { navigate(-1); return; }
+});
+</script>
+</body>
+</html>
