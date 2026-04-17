@@ -339,7 +339,7 @@ function loadImage(idx) {
   const fname = images[idx];
 
   document.getElementById('currentImg').src = IMAGES_PATH + fname;
-  document.getElementById('imgFilename').textContent = fname;
+  document.getElementById('imgFilename').textContent = `Image ${idx + 1} / ${images.length}`;
 
   // Preload next
   if (idx + 1 < images.length) {
