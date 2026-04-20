@@ -99,8 +99,8 @@
   .image-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; }
   .image-header { padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
   .image-filename { font-family: var(--mono); font-size: 0.78rem; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 80%; }
-  .img-container { display: flex; align-items: center; justify-content: center; background: #080a10; min-height: 420px; max-height: 560px; }
-  #currentImg { max-width: 100%; max-height: 560px; object-fit: contain; display: block; }
+  .img-container { display: flex; align-items: center; justify-content: center; background: #080a10; min-height: 504px; max-height: 672px; }
+  #currentImg { max-width: 100%; max-height: 672px; object-fit: contain; display: block; }
   .nav-row { display: flex; gap: 0.5rem; padding: 0.75rem 1rem; border-top: 1px solid var(--border); }
   .nav-btn { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: var(--muted); cursor: pointer; font-family: var(--sans); font-size: 0.85rem; padding: 0.5rem 1rem; transition: all 0.15s; }
   .nav-btn:hover { color: var(--text); border-color: var(--accent); }
@@ -157,7 +157,7 @@
 <div id="splash">
   <div class="logo">VERA Study · OSU-CHS</div>
   <h1 class="splash-title">Image<br><span>Quality Rater</span></h1>
-  <p class="splash-sub">Rate AI-generated stimulus images for the VERA study. Your ratings save automatically to a shared spreadsheet.</p>
+  <p class="splash-sub">Thank you for helping with the VERA study! You'll be viewing a series of images and giving quick ratings on each one — overall quality, pleasantness, how obvious it looks like AI, and any weirdness or artifacts. There are no right or wrong answers, just go with your first impression. Most people finish in about 20–30 minutes. Your ratings save automatically as you go.</p>
 
   <div class="field-group">
     <label>Your name</label>
@@ -283,7 +283,7 @@
 // ─────────────────────────────────────────────────────────────────
 // CONFIGURATION — replace APPS_SCRIPT_URL after you deploy the script
 // ─────────────────────────────────────────────────────────────────
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbygVjz66PMT6XCAMKsWmpxa7Yv15_eASHID8T758pyFaQBHok4N2Mo3myU6qDnJhy38/exec';
+const APPS_SCRIPT_URL = 'PASTE_YOUR_APPS_SCRIPT_URL_HERE';
 const IMAGES_PATH = 'images/';   // folder in the repo
 
 // ─────────────────────────────────────────────────────────────────
@@ -303,6 +303,11 @@ window.addEventListener('load', async () => {
     const data = await res.json();
     if (!Array.isArray(data) || data.length === 0) throw new Error('manifest.json is empty or not an array');
     images = data;
+    // Shuffle into random order (Fisher-Yates)
+    for (let i = images.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [images[i], images[j]] = [images[j], images[i]];
+    }
     document.getElementById('loadingText').textContent = `${images.length} images ready`;
     document.getElementById('startBtn').textContent = 'Start Rating →';
     document.getElementById('startBtn').disabled = false;
