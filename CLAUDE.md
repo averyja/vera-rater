@@ -18,6 +18,7 @@ sets/<id>/manifest.json   schema + image list for one set
 sets/<id>/images/*.jpg    1400 px derivatives
 tools/build_sets.py       rebuilds derivatives and manifests from the sidecars
 tools/form_fields.py      reads a Google Form's entry ids into config.js shape
+tools/ingest_ratings.py   ratings -> qc/ratings_<date>.csv and the sidecar qc blocks
 assets/             logo and icons, derived from the logo PNG
 docs/               LOCAL ONLY, gitignored — redesign report, mockup,
                     Google backend setup. Kept off GitHub because the repo is
@@ -105,9 +106,46 @@ Three rows with `set_id = __test__` were written during that check and should
 be deleted from the response sheet. They are the only rows whose `set_id` is
 not a real set id.
 
+## Feeding ratings back
+
+`tools/ingest_ratings.py` reads the response Sheet (URL taken from
+`config.js`, so there is one source of truth), writes `qc/ratings_<date>.csv`
+beside each set, and fills the sidecar `qc` blocks.
+
+```bash
+python3 tools/ingest_ratings.py                # report only, writes nothing
+python3 tools/ingest_ratings.py --write        # apply
+python3 tools/ingest_ratings.py --csv rows.csv --set vpt_v5_vape
+```
+
+It fills `decision`, `raters`, `notes`, plus `cue_visible` and
+`artifact_severity` where the set rates them. It leaves alone every qc key the
+raters do not judge — MULTICAT's `no_people`, `no_text` and the rest, and VPT's
+`control_clean` and `identity_match`, which needed the controls we dropped.
+
+**It only writes qc keys that already exist in a sidecar.** A key that is not
+there is reported and skipped, never created, because these files belong to
+the stimulus pipelines and an invented key is a silent schema change.
+
+QC policy lives in named constants at the top of the script:
+
+- `DECISION_RULE = "worst"` — one rater can veto. Any Unusable makes the image
+  `regenerate`; any Borderline makes it `review`; otherwise `accept`. The
+  alternative is `"majority"`. Disagreements are listed in the run output and
+  flagged in the CSV.
+- `CUE_VISIBLE_TRUE_AT` / `CUE_VISIBLE_FALSE_AT` (3.5 / 2.5) — mean
+  `cue_identifiable` above or below these sets `qc.cue_visible` true or false.
+  In between it stays `None` on purpose, so a person looks rather than a
+  threshold deciding a coin flip.
+- `artifact_severity` is the mean across raters, rounded to one decimal.
+
+Re-ratings are handled: the latest `rated_at` per (rater, set, image) wins.
+Every row that does not become a rating is counted and printed with a reason.
+Before writing it backs each sidecar up to `qc/sidecar_backup_<stamp>/`, and
+because these files are on OneDrive it reads each one back after writing and
+stops the run if the change did not persist.
+
 ## What is still open
-- `ingest_ratings.py` (pull ratings back into the sidecars' `qc` blocks and
-  `qc/ratings_<date>.csv`) is not written. Report phase 7, about 3 hours.
 - The April Sheet has not been exported to
   `stimulus_set_v5/qc/legacy_ratings_2026-04.csv`, and the Apps Script
   deployment has not been retired in the Apps Script console. Delete any

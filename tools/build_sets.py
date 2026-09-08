@@ -19,7 +19,8 @@ import os
 import sys
 from datetime import datetime, timezone
 
-from PIL import Image
+# Pillow is imported where it is used, not at module scope: ingest_ratings.py
+# imports SETS from here and has no business needing an imaging library.
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SETS_DIR = os.path.join(REPO, "sets")
@@ -178,6 +179,8 @@ def load_sidecars(spec):
 
 def build_image(src, dst, manifest_only):
     """Write the derivative; return (width, height, bytes, sha256-of-source)."""
+    from PIL import Image
+
     if manifest_only and os.path.exists(dst):
         with Image.open(dst) as im:
             w, h = im.size
