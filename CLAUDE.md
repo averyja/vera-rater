@@ -85,10 +85,27 @@ Keys: digits fill the highlighted row and move down; U/B/X and flag letters
 work from any row; C comments, Escape leaves; Enter saves and advances; N next
 unrated; ← → move; Z zoom; ? key list.
 
-## What is still open
+## Backend status
 
-- The Google Form does not exist yet. Until `config.js` names one, the site
-  runs `backend: 'local'` — ratings stay in the browser and reach no server.
+Live and verified end to end on 2026-09-08: an anonymous POST is accepted
+("Your response has been recorded"), rows reach the sheet with commas, escaped
+quotes, semicolon-joined flags and MULTICAT's empty fields all intact, and the
+site's own `progress()` reads them back in ~0.4 s with no rows skipped.
+
+Two things to know when writing anything that reads the published CSV:
+
+- **The published-CSV URL 307-redirects.** Follow redirects or you get an empty
+  body and a silent false negative — `curl -L`, not bare `curl`. Browser
+  `fetch` follows redirects on its own, so only scripts hit this.
+- **The sheet caches for five minutes** (`cache-control: max-age=300`), so a
+  row can take that long to become readable. That is the lag behind "Sent, not
+  yet confirmed"; it is not a lost rating.
+
+Three rows with `set_id = __test__` were written during that check and should
+be deleted from the response sheet. They are the only rows whose `set_id` is
+not a real set id.
+
+## What is still open
 - `ingest_ratings.py` (pull ratings back into the sidecars' `qc` blocks and
   `qc/ratings_<date>.csv`) is not written. Report phase 7, about 3 hours.
 - The April Sheet has not been exported to
