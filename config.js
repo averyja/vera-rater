@@ -17,6 +17,11 @@ window.VERA_CONFIG = {
   // 'local'      — ratings live in this browser only. No setup. Good for trying
   //                the site out; nothing reaches a server.
   // 'googleForm' — POST to a Google Form, read progress back from its Sheet.
+  //
+  // Still 'local': the response Sheet below is wired up and verified, but
+  // googleForm also needs formUrl and entries, which only the form page
+  // carries. Switching before those are filled in makes the site refuse to
+  // start. Set this to 'googleForm' in the same edit that fills them.
   backend: 'local',
 
   googleForm: {
@@ -24,8 +29,8 @@ window.VERA_CONFIG = {
     formUrl: '',
 
     // The response Sheet, File ▸ Share ▸ Publish to web ▸ CSV.
-    // .../spreadsheets/d/e/<LONG_ID>/pub?gid=0&single=true&output=csv
-    sheetCsvUrl: '',
+    // Verified 2026-09-08: reachable, CORS-open, headers match the field names.
+    sheetCsvUrl: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTC2yW9S15b98dBYwKkOwXWe5Kuomx2AwTJ9bf7i_iw7DZfFxsddkVFkJpl7nzEcy8rxar9cMPPl3l4/pub?gid=2096115639&single=true&output=csv',
 
     // Google Form field ids. tools/form_fields.py prints this block for you.
     entries: {
