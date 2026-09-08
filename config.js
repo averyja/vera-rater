@@ -17,16 +17,13 @@ window.VERA_CONFIG = {
   // 'local'      — ratings live in this browser only. No setup. Good for trying
   //                the site out; nothing reaches a server.
   // 'googleForm' — POST to a Google Form, read progress back from its Sheet.
-  //
-  // Still 'local': the response Sheet below is wired up and verified, but
-  // googleForm also needs formUrl and entries, which only the form page
-  // carries. Switching before those are filled in makes the site refuse to
-  // start. Set this to 'googleForm' in the same edit that fills them.
-  backend: 'local',
+  backend: 'googleForm',
 
   googleForm: {
     // .../forms/d/e/<LONG_ID>/formResponse   (note: formResponse, not viewform)
-    formUrl: '',
+    // "VERA image ratings" — verified 2026-09-08: publicly reachable with no
+    // sign-in, all twelve questions optional, accepting responses.
+    formUrl: 'https://docs.google.com/forms/d/e/1FAIpQLSdTWyWrAwufWmliz0GoXYP1EG41evlFFeg5lM27gwJ73WwlIw/formResponse',
 
     // The response Sheet, File ▸ Share ▸ Publish to web ▸ CSV.
     // Verified 2026-09-08: reachable, CORS-open, headers match the field names.
@@ -34,18 +31,18 @@ window.VERA_CONFIG = {
 
     // Google Form field ids. tools/form_fields.py prints this block for you.
     entries: {
-      rater:            '',
-      set_id:           '',
-      image_id:         '',
-      schema_version:   '',
-      overall:          '',
-      pleasantness:     '',
-      artifact:         '',
-      cue_identifiable: '',
-      cue_prominence:   '',
-      flags:            '',
-      comment:          '',
-      rated_at:         '',
+      rater:            'entry.2140325334',
+      set_id:           'entry.24781732',
+      image_id:         'entry.1442018805',
+      schema_version:   'entry.1247332849',
+      overall:          'entry.1653953154',
+      pleasantness:     'entry.1687993525',
+      artifact:         'entry.899921977',
+      cue_identifiable: 'entry.2009429021',
+      cue_prominence:   'entry.1025474826',
+      flags:            'entry.116957713',
+      comment:          'entry.542152775',
+      rated_at:         'entry.13988456',
     },
 
     // Column headers in the response Sheet, used to read progress back.
