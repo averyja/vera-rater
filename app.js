@@ -301,6 +301,7 @@
 
     $('#setTitle').textContent = S.manifest.title;
     $('#instructions').textContent = S.manifest.instructions;
+    $('#instructions').title = S.manifest.instructions;   // full text on hover
     $('#raterChip').textContent = S.rater;
   }
 

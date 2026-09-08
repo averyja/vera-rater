@@ -21,7 +21,13 @@ header {
 }
 header img { height:40px; width:40px; object-fit:contain; }
 header .title { font-weight:600; font-size:1rem; }
-header .sub { color:var(--mid); font-size:.8rem; font-family:var(--mono); }
+header .sub {
+  color:var(--mid); font-size:.8rem; font-family:var(--mono); max-width:80ch;
+  /* the per-set instructions are long; keep them from crowding out the UI */
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;
+  overflow:hidden;
+}
+header > div:nth-of-type(1) { min-width:0; }
 header .spacer { flex:1; }
 .chip {
   font-family:var(--mono); font-size:.8rem; background:var(--cloud);
@@ -170,4 +176,13 @@ button.secondary {
 @media (max-width:980px) {
   main { grid-template-columns:1fr; }
   .imgwrap img { max-height:52vh; }
+}
+
+/* On a narrow window the instructions are read once from the set picker, not
+   on every image; drop them so the image and items keep the screen. */
+@media (max-width:760px) {
+  header .sub { display:none; }
+  header { gap:.6rem; padding:.5rem .75rem; }
+  header img { height:32px; width:32px; }
+  main, .prog { padding-left:.75rem; padding-right:.75rem; }
 }
