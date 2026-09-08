@@ -35,8 +35,11 @@ docs/               LOCAL ONLY, gitignored — redesign report, mockup,
   are not indexed. They remain fetchable by anyone with a URL.
 - **CONTROL images excluded** — 60 VAPE only. This drops the report's paired
   VAPE-vs-CONTROL pleasantness batch check.
-- Rater identity: issued short codes, listed in `config.js` under `raters`.
-  An unlisted code is refused.
+- Rater identity: any rater types their own short code (`requireKnownRater:
+  false`). A blank code is still refused and codes are trimmed and lowercased,
+  but a typo makes a new rater with its own progress. Accepted as a trade for
+  a small pilot rather than a large release; `config.js` `raters` is now just
+  a record of who a code belongs to, which nothing reads.
 - Overall wording: Usable / Borderline / Unusable. Accent: slate blue on light.
 - Legacy `images/` and `manifest.json` removed from the tree; history keeps
   them, and commit `928ad75` is tagged **`legacy-2026-04`**.

@@ -50,13 +50,19 @@ window.VERA_CONFIG = {
     columns: { rater: 'rater', set_id: 'set_id', image_id: 'image_id' },
   },
 
-  // Raters type one of these short codes. Add a line per rater; the code is
-  // what identifies them in the data, so keep it stable once issued.
+  // Names for codes you have handed out. With requireKnownRater false this is
+  // documentation only — the site does not read it, and a code that is not
+  // listed here works just as well. Keep it current anyway: it is the only
+  // record of who a code in the data belongs to.
   raters: {
     jaa: 'Jason Avery',
     // rk1: 'Second rater',
   },
 
-  // Refuse a rater code that is not in the list above.
-  requireKnownRater: true,
+  // false — anyone can type their own code. Blank is still refused; the code
+  //         is trimmed and lowercased, so "JAA " and "jaa" are one rater.
+  //         Beyond that a typo makes a new rater with its own progress, which
+  //         is a known and accepted trade for a small pilot (Jason,
+  //         2026-09-08). Set true to go back to issued codes only.
+  requireKnownRater: false,
 };
