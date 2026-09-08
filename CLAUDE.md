@@ -104,4 +104,10 @@ unrated; ← → move; Z zoom; ? key list.
 - Do not re-create a watcher, installable trigger, or anything that runs as
   Jason's Google identity.
 - Bump the `?v=` query on the `<script>` and `<link>` tags in `index.html` on
-  every deploy, or raters keep running the previous script from cache.
+  every deploy, or raters keep running the previous script from cache. That
+  only busts the assets: `index.html` itself is cached by the browser for
+  about ten minutes, so a rater mid-session can stay on the previous version
+  that long. Tell raters to reload if a deploy has to reach them sooner.
+- GitHub Pages reports the *previous* build as `built` for a while after a
+  push. When checking a deploy, compare the build's commit to `HEAD`, not just
+  its status.
