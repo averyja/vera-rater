@@ -1,0 +1,19 @@
+{
+  "generated": "2026-09-08T05:13:48+00:00",
+  "sets": [
+    {
+      "set_id": "multicat_v5",
+      "title": "MULTICAT v5",
+      "subtitle": "Localizer images, 5 categories",
+      "count": 150,
+      "manifest": "sets/multicat_v5/manifest.json"
+    },
+    {
+      "set_id": "vpt_v5_vape",
+      "title": "VPT v5 \u2014 vape images",
+      "subtitle": "Cue-reactivity stimuli, VAPE condition only",
+      "count": 60,
+      "manifest": "sets/vpt_v5_vape/manifest.json"
+    }
+  ]
+}
