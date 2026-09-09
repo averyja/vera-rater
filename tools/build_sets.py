@@ -239,6 +239,11 @@ def build_set(spec, manifest_only=False):
             "bytes": nbytes,
             "label": spec["label_of"](side),
             "source_sha256": sha or old_hash.get(img_id),
+            # When the file now on disk was generated (sidecar generation.timestamp,
+            # ISO 8601 UTC). The rater counts a rating only if it postdates this,
+            # so a regenerated image goes back into every rater's queue without
+            # anyone editing the response Sheet.
+            "generated_at": (side.get("generation") or {}).get("timestamp"),
         }
         entry.update(spec["meta_of"](side))
         images.append(entry)

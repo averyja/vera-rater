@@ -188,15 +188,36 @@
     // has but this browser does not becomes 'saved' with no local values, so
     // it counts as done and is skipped rather than silently re-rated.
     try {
-      const { ids: done } = await backend.progress(S.rater, setId);
-      let added = 0;
+      const { ids: done, at } = await backend.progress(S.rater, setId);
+      let added = 0, superseded = 0, current = 0;
       for (const id of done) {
-        if (!S.records[id]) { S.records[id] = { values: {}, state: 'saved', remote: true }; added++; }
+        const when = at && at.get(id);
+        if (!ratingIsCurrent(id, when)) {
+          // The image was regenerated after this rater last rated it. The old
+          // row stays in the Sheet as history; here it no longer counts.
+          if (S.records[id] && (S.records[id].state === 'saved' || S.records[id].state === 'queued')) {
+            S.records[id] = { values: {}, state: 'unrated', superseded: true };
+          }
+          superseded++;
+          continue;
+        }
+        current++;
+        if (!S.records[id]) { S.records[id] = { values: {}, state: 'saved', remote: true, at: when }; added++; }
         else if (S.records[id].state === 'queued') S.records[id].state = 'saved';
       }
-      $('#resumeNote').textContent = done.size
-        ? `Resumed: ${done.size} of ${S.order.length} already recorded for ${S.rater}` +
-          (added ? ` (${added} from another device).` : '.')
+      // A local draft can also be older than the image (rated on this browser,
+      // then the image changed): apply the same rule to it.
+      for (const [id, r] of Object.entries(S.records)) {
+        if ((r.state === 'saved' || r.state === 'queued') && !done.has(id) && !ratingIsCurrent(id, r.at)) {
+          S.records[id] = { values: {}, state: 'unrated', superseded: true };
+          superseded++;
+        }
+      }
+      $('#resumeNote').textContent = (current || superseded)
+        ? `Resumed: ${current} of ${S.order.length} already recorded for ${S.rater}` +
+          (added ? ` (${added} from another device)` : '') +
+          (superseded ? `. ${superseded} image${superseded === 1 ? ' was' : 's were'} ` +
+                        'regenerated since you rated them and are back in your queue.' : '.')
         : '';
       saveDraft();
     } catch (e) {
@@ -220,6 +241,18 @@
     const st = S.records[id] && S.records[id].state;
     return st === 'saved' || st === 'queued';
   };
+
+  // A rating is current if it was made after the image now on disk was
+  // generated (manifest `generated_at`, from the stimulus sidecar). No
+  // generated_at, or no rating time, means we cannot tell, so it counts.
+  function ratingIsCurrent(id, ratedAt) {
+    const img = S.manifest.images.find(i => i.id === id);
+    const gen = img && img.generated_at;
+    if (!gen || !ratedAt) return true;
+    const g = Date.parse(gen), r = Date.parse(ratedAt);
+    if (Number.isNaN(g) || Number.isNaN(r)) return true;
+    return r > g;
+  }
 
   // ── item rows ────────────────────────────────────────────────────────────
 
@@ -530,11 +563,12 @@
   async function reconcile(el) {
     el.textContent = 'Checking…';
     try {
-      const { ids } = await backend.progress(S.rater, S.setId);
+      const { ids, at } = await backend.progress(S.rater, S.setId);
       let promoted = 0, stillQueued = 0;
       for (const [id, r] of Object.entries(S.records)) {
         if (r.state === 'queued' || r.state === 'saved') {
-          if (ids.has(id)) { if (r.state === 'queued') promoted++; r.state = 'saved'; }
+          const confirmed = ids.has(id) && ratingIsCurrent(id, at && at.get(id));
+          if (confirmed) { if (r.state === 'queued') promoted++; r.state = 'saved'; }
           else if (r.state === 'queued') stillQueued++;
         }
       }

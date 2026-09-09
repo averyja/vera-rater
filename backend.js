@@ -6,7 +6,11 @@
  *   init()                     -> Promise<void>
  *   describe()                 -> string shown in the UI
  *   save(record)               -> Promise<'saved'|'queued'>   (throws on failure)
- *   progress(rater, setId)     -> Promise<{ids:Set<string>, authoritative:boolean}>
+ *   progress(rater, setId)     -> Promise<{ids:Set<string>, at:Map<string,string>,
+ *                                           authoritative:boolean}>
+ *                                 `at` is the latest rated_at (ISO) per image id, so
+ *                                 the app can tell a rating of a since-regenerated
+ *                                 image from a current one.
  *
  * 'saved'  means a server confirmed the write.
  * 'queued' means the write left the browser but cannot be confirmed yet — the
@@ -66,11 +70,15 @@ window.VERABackend = (function () {
       return 'saved';
     },
     async progress(rater, setId) {
-      const ids = new Set();
+      const ids = new Set(), at = new Map();
       for (const rec of Object.values(this._all())) {
-        if (rec.rater === rater && rec.set_id === setId) ids.add(rec.image_id);
+        if (rec.rater === rater && rec.set_id === setId) {
+          ids.add(rec.image_id);
+          const prev = at.get(rec.image_id);
+          if (!prev || (rec.rated_at || '') > prev) at.set(rec.image_id, rec.rated_at || '');
+        }
       }
-      return { ids, authoritative: true };
+      return { ids, at, authoritative: true };
     },
     async exportCsv() {
       const recs = Object.values(this._all());
@@ -147,21 +155,28 @@ window.VERABackend = (function () {
       }
       const rows = parseCsv(await res.text());
       const col = g.columns || {};
-      const ids = new Set();
+      const ids = new Set(), at = new Map();
       let skipped = 0;
       for (const row of rows) {
         const r = row[col.rater || 'rater'];
         const s = row[col.set_id || 'set_id'];
         const i = row[col.image_id || 'image_id'];
         if (r === undefined || s === undefined || i === undefined) { skipped++; continue; }
-        if (r === rater && s === setId && i) ids.add(i);
+        if (r === rater && s === setId && i) {
+          ids.add(i);
+          // rated_at is the ISO stamp the app sent; the Sheet's own Timestamp
+          // is local time with no zone, so it is only a last resort.
+          const t = row[col.rated_at || 'rated_at'] || '';
+          const prev = at.get(i);
+          if (prev === undefined || t > prev) at.set(i, t);
+        }
       }
       if (skipped) {
         console.warn(`progress: ${skipped}/${rows.length} sheet rows lacked the ` +
                      'expected columns and were ignored — check ' +
                      'config.js googleForm.columns against the Sheet headers.');
       }
-      return { ids, authoritative: true, rows: rows.length, skipped };
+      return { ids, at, authoritative: true, rows: rows.length, skipped };
     },
   };
 

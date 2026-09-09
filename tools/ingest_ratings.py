@@ -295,6 +295,28 @@ def main():
             print(f"  ! {set_id}: {bad!r} is not an image in this set, ignored")
             rated.pop(bad)
 
+        # A rating older than the image now on disk describes a file that no
+        # longer exists. The manifest's generated_at is the sidecar's
+        # generation.timestamp; the app applies the same rule when resuming.
+        gen_at = {i["id"]: i.get("generated_at") for i in manifest["images"]}
+        superseded = defaultdict(int)
+        for img in list(rated):
+            g = gen_at.get(img)
+            if not g:
+                continue
+            keep = [r for r in rated[img] if r["_stamp"] and r["_stamp"] > g]
+            if len(keep) != len(rated[img]):
+                superseded[img] += len(rated[img]) - len(keep)
+            if keep:
+                rated[img] = keep
+            else:
+                rated.pop(img)
+        if superseded:
+            n_rows = sum(superseded.values())
+            print(f"  {n_rows} rating(s) on {len(superseded)} image(s) predate the current "
+                  f"image file and were not used (image regenerated after rating): "
+                  + ", ".join(sorted(superseded)[:8]) + (", …" if len(superseded) > 8 else ""))
+
         print(f"{set_id}")
         print(f"  {len(rated)}/{len(all_ids)} images have at least one rating")
 

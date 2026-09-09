@@ -64,10 +64,28 @@ is stale for VPT) and writes the derivatives and manifests.
 | `multicat_v5` | 150 (30 × face, food, object, scene, vape) | `multicat_localizer/multicat_v5_pipeline/set/images` |
 | `vpt_v5_vape` | 60 VAPE (30 SOLO, 30 SOCIAL) | `VPT_v1/stimulus_set_v5/images`, filtered `condition=VAPE` |
 
-`vape_01`, `vape_02` and `vape_03` in MULTICAT carry
-`generation.status = success_repaired`. They are complete images and **are**
-rated; the builder accepts any `success*` status and records the variant in the
-manifest as `generation_status`.
+**The MULTICAT images changed after the 2026-09-08 rating pass.** All 30 vapes
+were regenerated with `openai/gpt-image-2.5-sunburst`, and `food_14`,
+`object_04`, `object_11` and `object_practice_04` were regenerated after prompt
+edits, in response to the raters' own comments (the "resting on air" ones, and
+a rule that no vape stands diagonally). The derivatives here have been rebuilt
+and match what is on OneDrive.
+
+Then on 2026-09-09 afternoon a further 22 were regenerated with sunburst: the
+5 a rater called unusable and the 17 borderlines, 12 of them with prompt
+edits taken from the rater comments. 56 of the 150 rated images have been
+replaced since the pass.
+
+**Regenerated images go back into the queue on their own.** Each manifest
+image carries `generated_at`, the sidecar's `generation.timestamp`. The app
+(`ratingIsCurrent` in `app.js`) counts a rating only if its `rated_at`
+postdates that, so on resume a rater sees the images regenerated after they
+rated them as unrated, with a note saying how many; the old rows stay in the
+Sheet as history. `tools/ingest_ratings.py` applies the same rule and reports
+how many rows it set aside. Nothing in the Sheet is edited. The 94 untouched
+images and their 188 rows stand; the 112 rows on the 56 replaced images are
+ignored by both until re-rated. The set is mixed-renderer in every category:
+52 sunburst, 98 gpt-image-2, recorded per sidecar in `generation.model`.
 
 Rebuild after regenerating a stimulus set:
 
