@@ -107,6 +107,14 @@ Keys: digits fill the highlighted row and move down; U/B/X and flag letters
 work from any row; C comments, Escape leaves; Enter saves and advances; N next
 unrated; ← → move; Z zoom; ? key list.
 
+**Touch.** A phone has no Enter key, so every keyboard action also exists as a
+button in `#actionbar` — Save & next, and back/forward arrows — wired to the
+same functions the keys call so the two routes cannot drift. Below 760 px that
+bar is fixed to the bottom of the screen, the item rows stack one control per
+line, targets grow to 44 px on a coarse pointer, and the image panel is sticky
+so it stays in view while the rows are scrolled and tapped. Zoom is the `zoom`
+link in the image header or a tap on the image itself.
+
 ## Backend status
 
 Live and verified end to end on 2026-09-08: an anonymous POST is accepted
@@ -123,9 +131,9 @@ Two things to know when writing anything that reads the published CSV:
   row can take that long to become readable. That is the lag behind "Sent, not
   yet confirmed"; it is not a lost rating.
 
-Three rows with `set_id = __test__` were written during that check and should
-be deleted from the response sheet. They are the only rows whose `set_id` is
-not a real set id.
+The sheet holds three fully blank rows (every field empty). They are harmless:
+`ingest_ratings.py` counts them under "missing rater, set_id or image_id" and
+prints them rather than dropping them silently.
 
 ## Feeding ratings back
 

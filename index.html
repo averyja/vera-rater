@@ -9,7 +9,7 @@
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <link rel="manifest" href="assets/site.webmanifest">
 <!-- bump ?v= on every deploy so raters never run a stale script -->
-<link rel="stylesheet" href="styles.css?v=20260909a">
+<link rel="stylesheet" href="styles.css?v=20260909b">
 </head>
 <body>
 
@@ -61,6 +61,7 @@
         <span class="id" id="imgId"></span>
         <span id="imgLabel"></span>
         <span id="imgPos"></span>
+        <button class="chip link" id="zoomBtn" title="Zoom (Z)">zoom</button>
       </div>
       <div class="imgwrap" id="imgWrap">
         <img id="stimulus" alt="">
@@ -69,9 +70,23 @@
 
     <div>
       <div class="items" id="items"></div>
-      <div class="save idle" id="saveState"></div>
 
-      <div style="display:flex; gap:.5rem; align-items:center; margin:.4rem 0 .6rem;">
+      <!-- Everything the keyboard does, as buttons. On a narrow screen this
+           becomes a fixed bar at the bottom: there is no Enter key on a
+           phone, so without it a rater can set values but never advance. -->
+      <div class="actionbar" id="actionbar">
+        <div class="save idle" id="saveState"></div>
+        <div class="actions">
+          <button class="secondary" id="prevBtn" aria-label="Previous image"
+                  title="Previous image (left arrow)">&larr;</button>
+          <button class="primary" id="saveNextBtn"
+                  title="Save and go to the next unrated image (Enter)">Save &amp; next</button>
+          <button class="secondary" id="skipBtn" aria-label="Next image without saving"
+                  title="Next image without saving (right arrow)">&rarr;</button>
+        </div>
+      </div>
+
+      <div class="verifyrow">
         <button class="secondary" id="verifyBtn">Verify saves</button>
         <span class="proglabel" id="verifyOut" style="margin:0"></span>
       </div>
@@ -83,7 +98,8 @@
         <b>C</b> comment, <b>Esc</b> leave the comment<br>
         <b>Enter</b> save and go to the next unrated image<br>
         <b>N</b> next unrated · <b>← →</b> back and forward<br>
-        <b>Z</b> zoom the image · <b>?</b> this list
+        <b>Z</b> zoom the image · <b>?</b> this list<br>
+        On a touch screen: tap the buttons, tap the image to zoom.
       </div>
     </div>
   </main>
@@ -112,8 +128,8 @@
   <p class="muted">Nothing was lost — ratings already made are still cached in this browser.</p>
 </div>
 
-<script src="config.js?v=20260909a"></script>
-<script src="backend.js?v=20260909a"></script>
-<script src="app.js?v=20260909a"></script>
+<script src="config.js?v=20260909b"></script>
+<script src="backend.js?v=20260909b"></script>
+<script src="app.js?v=20260909b"></script>
 </body>
 </html>

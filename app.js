@@ -322,7 +322,10 @@
       } else if (item.type === 'text') {
         const ta = document.createElement('textarea');
         ta.id = 'commentBox';
-        ta.placeholder = 'Comment — press C to type here, Escape to leave';
+        // "press C ... Escape" means nothing on a phone with no such keys
+        ta.placeholder = matchMedia('(pointer:coarse)').matches
+          ? 'Comment — tap to type (optional)'
+          : 'Comment — press C to type here, Escape to leave';
         ta.addEventListener('input', () => {
           rec().values[item.field] = ta.value;
           markDirty();
@@ -402,10 +405,22 @@
     el.alt = `${img.label} — ${img.id}`;
     S.zoom = false;
     $('#imgWrap').classList.remove('zoom');
+    $('#zoomBtn').textContent = 'zoom';
+    $('#prevBtn').disabled = S.idx === 0;
+    $('#skipBtn').disabled = S.idx >= S.order.length - 1;
     S.activeRow = 0;
     renderRows();
     renderSaveState();
     renderProgress();
+    // On a phone the items are scrolled through; a new image must start at
+    // the top rather than wherever the last one was left.
+    window.scrollTo({ top: 0 });
+  }
+
+  function toggleZoom() {
+    S.zoom = !S.zoom;
+    $('#imgWrap').classList.toggle('zoom', S.zoom);
+    $('#zoomBtn').textContent = S.zoom ? 'fit' : 'zoom';
   }
 
   function renderRows() {
@@ -628,12 +643,7 @@
       return;
     }
     if (key === 'n') { ev.preventDefault(); nextUnrated(); return; }
-    if (key === 'z') {
-      ev.preventDefault();
-      S.zoom = !S.zoom;
-      $('#imgWrap').classList.toggle('zoom', S.zoom);
-      return;
-    }
+    if (key === 'z') { ev.preventDefault(); toggleZoom(); return; }
     if (key === '?') { ev.preventDefault(); $('#hint').hidden = !$('#hint').hidden; return; }
 
     // letters bound to a choice option or a flag, live from any row
@@ -671,6 +681,14 @@
     if (ev.key === 'Enter') $('#startBtn').click();
   });
   $('#backBtn').addEventListener('click', () => { show('#picker'); });
+
+  // The action bar does exactly what the keys do — same functions, so the two
+  // routes cannot drift apart. Without it a phone has no way to advance.
+  $('#saveNextBtn').addEventListener('click', () => saveAndAdvance());
+  $('#prevBtn').addEventListener('click', () => go(-1));
+  $('#skipBtn').addEventListener('click', () => go(1));
+  $('#zoomBtn').addEventListener('click', toggleZoom);
+  $('#imgWrap').addEventListener('click', toggleZoom);
   $('#verifyBtn').addEventListener('click', () => reconcile($('#verifyOut')));
   $('#doneVerifyBtn').addEventListener('click', () => reconcile($('#doneSummary')));
   $('#againBtn').addEventListener('click', () => { show('#picker'); });
