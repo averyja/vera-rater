@@ -34,6 +34,7 @@ import os
 import re
 import shutil
 import sys
+import time
 import urllib.request
 from collections import defaultdict
 from datetime import datetime, timezone
@@ -83,14 +84,66 @@ def sheet_url_from_config():
     return m.group(1)
 
 
-def fetch_rows(url):
+def _fetch_once(url):
     # The published-CSV URL 307-redirects. urllib follows redirects; a bare
     # curl does not, which reads an empty body and looks like an empty sheet.
-    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0",
-                                               "Cache-Control": "no-cache"})
+    sep = "&" if "?" in url else "?"
+    req = urllib.request.Request(
+        f"{url}{sep}_={int(time.time() * 1000)}",
+        headers={"User-Agent": "Mozilla/5.0", "Cache-Control": "no-cache"})
     with urllib.request.urlopen(req, timeout=60) as fh:
         text = fh.read().decode("utf-8-sig", "replace")
     return list(csv.DictReader(io.StringIO(text)))
+
+
+def fetch_rows(url, fetches=3, pause=2.0):
+    """Union of several reads of the published Sheet.
+
+    Google serves the published CSV from more than one snapshot, and they are
+    not in step: three cache-busted reads seconds apart returned 461, 463 and
+    451 rows on 2026-09-09. One read therefore undercounts silently, which for
+    a QC pass means an image quietly looks unrated. Read a few times and take
+    the union, keyed on the fields that make a row unique.
+    """
+    def key(r):
+        return (r.get("Timestamp", ""), r.get("rater", ""),
+                r.get("set_id", ""), r.get("image_id", ""),
+                r.get("rated_at", ""))
+
+    seen, raw_counts, distinct_counts = {}, [], []
+    for i in range(max(1, fetches)):
+        if i:
+            time.sleep(pause)
+        try:
+            rows = _fetch_once(url)
+        except Exception as e:
+            print(f"  ! read {i + 1} of {fetches} failed: {e}")
+            continue
+        raw_counts.append(len(rows))
+        distinct_counts.append(len({key(r) for r in rows}))
+        for r in rows:
+            seen.setdefault(key(r), r)
+
+    if not raw_counts:
+        sys.exit("ERROR: could not read the published Sheet at all.")
+
+    union = list(seen.values())
+    print(f"  {len(raw_counts)} reads returned {raw_counts} rows "
+          f"({distinct_counts} distinct); union {len(union)}")
+
+    if max(raw_counts) != min(raw_counts):
+        print(f"    the Sheet served snapshots differing by "
+              f"{max(raw_counts) - min(raw_counts)} rows, which is why it is "
+              f"read more than once")
+    gained = len(union) - max(distinct_counts)
+    if gained > 0:
+        print(f"    {gained} row(s) were in one snapshot but not another and "
+              f"a single read would have missed them")
+    dups = max(raw_counts) - max(distinct_counts)
+    if dups > 0:
+        print(f"    {dups} row(s) in a single snapshot share "
+              f"rater+set+image+rated_at and were counted once")
+    return union
 
 
 def read_csv_file(path):
@@ -247,6 +300,9 @@ def main():
                     help="restrict to this set id (repeatable)")
     ap.add_argument("--write", action="store_true",
                     help="actually update the sidecars (default: report only)")
+    ap.add_argument("--fetches", type=int, default=3,
+                    help="how many times to read the Sheet and union the "
+                         "results (default 3; its snapshots disagree)")
     args = ap.parse_args()
 
     wanted = set(args.sets or SET_BY_ID)
@@ -256,7 +312,8 @@ def main():
 
     source = args.csv or sheet_url_from_config()
     print(f"reading {source}")
-    rows = read_csv_file(args.csv) if args.csv else fetch_rows(source)
+    rows = (read_csv_file(args.csv) if args.csv
+            else fetch_rows(source, fetches=args.fetches))
     print(f"  {len(rows)} data rows\n")
 
     if not args.write:

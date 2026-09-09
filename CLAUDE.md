@@ -129,7 +129,17 @@ Two things to know when writing anything that reads the published CSV:
   `fetch` follows redirects on its own, so only scripts hit this.
 - **The sheet caches for five minutes** (`cache-control: max-age=300`), so a
   row can take that long to become readable. That is the lag behind "Sent, not
-  yet confirmed"; it is not a lost rating.
+  yet confirmed"; it is not a lost rating. A row that has not appeared after
+  ten minutes is still most likely lag: on 2026-09-09 a save took about
+  fifteen minutes to surface and arrived intact.
+- **The published CSV serves more than one snapshot, and they disagree.**
+  Cache-busted reads seconds apart have returned 453, 476 and 477 rows. A
+  single read therefore undercounts silently, which for a QC pass means an
+  image quietly looks unrated. `ingest_ratings.py` reads three times and takes
+  the union (`--fetches N`), and prints the spread. Anything else written
+  against this Sheet should do the same. The app's `progress()` does one read,
+  so "Verify saves" can under-report; pressing it again is the fix.
+- **Run the ingest when rating has stopped**, or the union is a moving target.
 
 The sheet holds three fully blank rows (every field empty). They are harmless:
 `ingest_ratings.py` counts them under "missing rater, set_id or image_id" and
