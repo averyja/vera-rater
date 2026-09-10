@@ -76,6 +76,13 @@ Then on 2026-09-09 afternoon a further 22 were regenerated with sunburst: the
 edits taken from the rater comments. 56 of the 150 rated images have been
 replaced since the pass.
 
+**vape_18 is a second image of the Elf Bar BC5000**, not a 24th distinct
+device. The North FT12000 failed six generations and the rater said to skip it,
+so on 2026-09-10 the slot became a second Elf Bar scene (car console, against
+vape_12's picnic table) and `seeds/reference_images.csv` points both ids at the
+same device photo. Its `qc` block was cleared, since the old one described an
+image that no longer exists.
+
 **Regenerated images go back into the queue on their own.** Each manifest
 image carries `generated_at`, the sidecar's `generation.timestamp`. The app
 (`ratingIsCurrent` in `app.js`) counts a rating only if its `rated_at`
@@ -86,6 +93,29 @@ how many rows it set aside. Nothing in the Sheet is edited. The 94 untouched
 images and their 188 rows stand; the 112 rows on the 56 replaced images are
 ignored by both until re-rated. The set is mixed-renderer in every category:
 52 sunburst, 98 gpt-image-2, recorded per sidecar in `generation.model`.
+
+### Rules for regenerating (Jason, 2026-09-10)
+
+- **Never regenerate an image whose `qc.decision` is `accept`, and never edit
+  its prompt.** Generation is a paid API call out of Jason's own budget, and a
+  new `generated_at` also forces both raters to re-rate the image. Regenerate
+  only what a rater marked `regenerate`, or what Jason names.
+- If an accepted item's prompt and image have drifted apart, **roll the prompt
+  back**, never regenerate the image. `generation.prompt_sent` records the text
+  that made the image on disk; compare against it after stripping
+  `REFERENCE_PREFIX`, which is prepended for any item with a device reference.
+- Prompts **need not be one rigid formula** varying only by slot. Isolated
+  post-hoc edits to fix realism or a visual fault are valid and expected;
+  `edit_prompt.py` keeps them auditable. Do not propose regenerating a category
+  to make prompts uniform.
+- `edit_prompt.py --check` lists images older than their prompt. A stale
+  *accepted* item is a prompt to revert; a stale `review`/`regenerate` item is
+  legitimately awaiting regeneration.
+
+Done on 2026-09-10: 25 accepted vape prompts were reverted to match their
+images (`edits/revert_accepted_20260910.json`); no image was regenerated, and
+all 27 accepted vape prompts now equal their `generation.prompt_sent`.
+`vape_07` stays edited because it is on `review`.
 
 Rebuild after regenerating a stimulus set:
 
