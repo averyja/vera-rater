@@ -108,6 +108,9 @@ ignored by both until re-rated. The set is mixed-renderer in every category:
   post-hoc edits to fix realism or a visual fault are valid and expected;
   `edit_prompt.py` keeps them auditable. Do not propose regenerating a category
   to make prompts uniform.
+- **A prompt technique proven on one or two items is not rolled out to the rest
+  without asking.** Report the result and let Jason decide; a sweep means
+  regenerating images to match.
 - `edit_prompt.py --check` lists images older than their prompt. A stale
   *accepted* item is a prompt to revert; a stale `review`/`regenerate` item is
   legitimately awaiting regeneration.
