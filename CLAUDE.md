@@ -85,8 +85,8 @@ wood. All 30 object items are again distinct.
 
 **object_practice_04 is an LED light bulb on the kitchen counter** (Jason,
 2026-09-11), replacing the can opener, which failed twice on warped geometry
-and "resting on air". A bulb standing on its screw base gives an unambiguous
-contact point. The first version described a frosted
+and "resting on air". It rests on its side: a bulb cannot balance upright on its
+screw base, which the first two attempts had it doing. The first version described a frosted
 envelope, a ribbed heat sink and visible filament strips together, which no
 real bulb combines; Jason had the filament strips dropped and the description
 cut back to shape, finish, size and base. Keep it plain.
