@@ -76,17 +76,22 @@ Then on 2026-09-09 afternoon a further 22 were regenerated with sunburst: the
 edits taken from the rater comments. 56 of the 150 rated images have been
 replaced since the pass.
 
-**object_11 is a second image of the television remote**, not a 25th distinct
-object. The game controller failed three times, twice on "resting on air", and
-Jason pulled it on 2026-09-11. The slot reuses object_14's accepted prompt text
-verbatim with the scene kept as object_11's living-room coffee table, so the
-two remotes differ by setting. Its qc block was cleared. Note the two images
-are more alike than intended: both are dark remotes on dark wood, separated
-mainly by background.
+**object_11 is a ballpoint pen on a pale grey office desk** (Jason,
+2026-09-11). The original game controller failed three times, twice on
+"resting on air", through contact-shadow wording, pose wording and a
+stripped-back prompt. A brief stint as a second television remote was dropped
+because it duplicated object_14 too closely, both being dark objects on dark
+wood. All 30 object items are again distinct.
 
-**object_practice_04 is tabled** (Jason, 2026-09-11). The stripped-back
-can-opener image stands and no further attempts are to be made on it without
-his say-so.
+**object_practice_04 is an LED light bulb on the kitchen counter** (Jason,
+2026-09-11), replacing the can opener, which failed twice on warped geometry
+and "resting on air". A bulb standing on its screw base gives an unambiguous
+contact point. Note the prompt describes a frosted envelope, a ribbed heat sink
+and visible filament strips together, which real bulbs do not combine; if the
+rater calls it odd, that mixture is the first thing to simplify.
+
+Both had their qc blocks cleared, since those described images that no longer
+exist.
 
 **vape_18 is a second image of the Elf Bar BC5000**, not a 24th distinct
 device. The North FT12000 failed six generations and the rater said to skip it,
