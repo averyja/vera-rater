@@ -76,6 +76,18 @@ Then on 2026-09-09 afternoon a further 22 were regenerated with sunburst: the
 edits taken from the rater comments. 56 of the 150 rated images have been
 replaced since the pass.
 
+**object_11 is a second image of the television remote**, not a 25th distinct
+object. The game controller failed three times, twice on "resting on air", and
+Jason pulled it on 2026-09-11. The slot reuses object_14's accepted prompt text
+verbatim with the scene kept as object_11's living-room coffee table, so the
+two remotes differ by setting. Its qc block was cleared. Note the two images
+are more alike than intended: both are dark remotes on dark wood, separated
+mainly by background.
+
+**object_practice_04 is tabled** (Jason, 2026-09-11). The stripped-back
+can-opener image stands and no further attempts are to be made on it without
+his say-so.
+
 **vape_18 is a second image of the Elf Bar BC5000**, not a 24th distinct
 device. The North FT12000 failed six generations and the rater said to skip it,
 so on 2026-09-10 the slot became a second Elf Bar scene (car console, against
