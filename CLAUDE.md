@@ -76,6 +76,16 @@ Then on 2026-09-09 afternoon a further 22 were regenerated with sunburst: the
 edits taken from the rater comments. 56 of the 150 rated images have been
 replaced since the pass.
 
+**scene_23 is a library aisle between stacks**, not the grocery aisle it was
+(Jason, 2026-09-12). Two faults: `ad` rated it borderline and the image read as
+a library anyway, and the item contradicted its own category constraint, which
+forbids food or drink while the prompt asked for cartons, cans and bagged
+goods. A grocery aisle is also food-heavy in a set where food is its own
+category. It keeps the long-aisle composition and stays distinct from
+`scene_12`, which is a reading room of tables and seating. Worth remembering
+that the scene constraints forbid food, drink, people, screens showing a
+picture, and any legible lettering.
+
 **object_11 is a ballpoint pen on a pale grey office desk** (Jason,
 2026-09-11). The original game controller failed three times, twice on
 "resting on air", through contact-shadow wording, pose wording and a

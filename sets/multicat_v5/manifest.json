@@ -3,7 +3,7 @@
   "title": "MULTICAT v5",
   "subtitle": "Localizer images, 5 categories",
   "version": "v5",
-  "built_at": "2026-09-11T20:46:17+00:00",
+  "built_at": "2026-09-12T19:44:21+00:00",
   "builder": "tools/build_sets.py",
   "source_path": "/Users/javery/Library/CloudStorage/OneDrive-OklahomaAandMSystem/Studies/VERA/fMRI_tasks/multicat_localizer/multicat_v5_pipeline/set/images",
   "derivative": {
@@ -1735,14 +1735,14 @@
       "file": "scene_23.jpg",
       "width": 1400,
       "height": 1050,
-      "bytes": 354517,
+      "bytes": 367886,
       "label": "scene",
-      "source_sha256": "3881c2b71fb89c34",
-      "generated_at": "2026-09-09T18:29:53.292144+00:00",
+      "source_sha256": "4861a3f124e6b1f2",
+      "generated_at": "2026-09-12T19:43:58.090185+00:00",
       "category": "scene",
       "role": "scanner",
-      "item": "a grocery-store aisle with stocked shelves",
-      "setting": "a grocery-store aisle with stocked shelves",
+      "item": "a library aisle between tall book stacks",
+      "setting": "a library aisle between tall book stacks",
       "generation_status": "success"
     },
     {
