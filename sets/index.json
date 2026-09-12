@@ -1,5 +1,5 @@
 {
-  "generated": "2026-09-12T19:44:21+00:00",
+  "generated": "2026-09-12T22:09:44+00:00",
   "sets": [
     {
       "set_id": "multicat_v5",
@@ -14,6 +14,13 @@
       "subtitle": "Cue-reactivity stimuli, VAPE condition only",
       "count": 60,
       "manifest": "sets/vpt_v5_vape/manifest.json"
+    },
+    {
+      "set_id": "vpt_v5_revisions",
+      "title": "VPT v5 \u2014 edit revisions",
+      "subtitle": "Edited candidates for the flagged vape images",
+      "count": 33,
+      "manifest": "sets/vpt_v5_revisions/manifest.json"
     }
   ]
 }

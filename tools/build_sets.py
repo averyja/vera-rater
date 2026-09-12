@@ -68,6 +68,70 @@ def scale(field, label, low, high, required=True):
 
 # ── set definitions ──────────────────────────────────────────────────────
 
+# ── VPT items, shared by the production set and the revision set ─────────
+# Defined once so the two sets cannot drift apart; a rating of a revision is
+# only comparable with the rating of its original if the form is identical.
+
+VPT_FLAGS = {
+    "field": "flags",
+    "label": "Flags",
+    "type": "flags",
+    "required": False,
+    "options": [
+        {"value": "no_vapour",       "label": "Vapour missing",             "key": "v"},
+        {"value": "second_device",   "label": "Second device or cigarette", "key": "d"},
+        {"value": "looks_at_cam",    "label": "Looks at camera",            "key": "l"},
+        {"value": "readable_text",   "label": "Readable text or logo",      "key": "t"},
+        {"value": "scene_mismatch",  "label": "Scene mismatch",             "key": "m"},
+        # Added 2026-09-12 (Jason). The three faults the 2026-09-09 pass kept
+        # describing in free text, so the next pass can count them instead of
+        # grepping comments. Appended rather than interleaved, so the first
+        # five keep the positions and keys raters already know, and G/W/E are
+        # clear of every key app.js reserves (U B X, C, N, Z, ?, digits).
+        {"value": "device_lighting", "label": "Device lighting",            "key": "g"},
+        {"value": "vapour_wrong",    "label": "Vapour looks wrong",         "key": "w"},
+        {"value": "scene_error",     "label": "Scene or anatomy error",     "key": "e"},
+    ],
+}
+
+VPT_SCHEMA = [
+    OVERALL,
+    scale("pleasantness", "Pleasantness", "Unpleasant", "Very pleasant"),
+    scale("artifact", "Artifacts", "None", "Severe"),
+    scale("cue_identifiable", "Cue identifiable", "Could be anything",
+          "Unmistakably a vape"),
+    scale("cue_prominence", "Cue prominence", "Easy to miss",
+          "Dominates the frame"),
+    VPT_FLAGS,
+    COMMENT,
+]
+
+# Distinguishing the new flags from the two they sit near, said once here and
+# shown to the rater under the images.
+VPT_FLAG_NOTE = (
+    "Device lighting: the device is lit like a product shot rather than by the "
+    "scene. Vapour looks wrong: vapour is there but unconvincing, as against "
+    "Vapour missing. Scene or anatomy error: bodies, hands or objects are wrong, "
+    "as against Scene mismatch, which is a scene that does not fit the brief."
+)
+
+
+def vpt_label_of(s):
+    return f"{s['type'].title()} \u00b7 {s['pair_id']}"
+
+
+def vpt_meta_of(s):
+    return {
+        "pair_id": s["pair_id"],
+        "type": s["type"],
+        "twin_id": s.get("twin_id"),
+        "device": s.get("vape_device"),
+        "salience": (s.get("scene") or {}).get("salience"),
+        "lighting": (s.get("scene") or {}).get("lighting"),
+        "generation_status": (s.get("generation") or {}).get("status"),
+    }
+
+
 SETS = [
     {
         "set_id": "multicat_v5",
@@ -105,41 +169,34 @@ SETS = [
         "instructions": (
             "Judge each vape image on its own terms. Overall is the QC gate; the "
             "cue items ask whether the device reads as a vape and how much of the "
-            "frame it commands. Flag anything a later batch check should catch."
+            "frame it commands. Flag anything a later batch check should catch. "
+            + VPT_FLAG_NOTE
         ),
-        "schema": [
-            OVERALL,
-            scale("pleasantness", "Pleasantness", "Unpleasant", "Very pleasant"),
-            scale("artifact", "Artifacts", "None", "Severe"),
-            scale("cue_identifiable", "Cue identifiable", "Could be anything",
-                  "Unmistakably a vape"),
-            scale("cue_prominence", "Cue prominence", "Easy to miss",
-                  "Dominates the frame"),
-            {
-                "field": "flags",
-                "label": "Flags",
-                "type": "flags",
-                "required": False,
-                "options": [
-                    {"value": "no_vapour",    "label": "Vapour missing",            "key": "v"},
-                    {"value": "second_device", "label": "Second device or cigarette", "key": "d"},
-                    {"value": "looks_at_cam", "label": "Looks at camera",           "key": "l"},
-                    {"value": "readable_text", "label": "Readable text or logo",     "key": "t"},
-                    {"value": "scene_mismatch", "label": "Scene mismatch",           "key": "m"},
-                ],
-            },
-            COMMENT,
-        ],
-        "label_of": lambda s: f"{s['type'].title()} · {s['pair_id']}",
-        "meta_of": lambda s: {
-            "pair_id": s["pair_id"],
-            "type": s["type"],
-            "twin_id": s.get("twin_id"),
-            "device": s.get("vape_device"),
-            "salience": (s.get("scene") or {}).get("salience"),
-            "lighting": (s.get("scene") or {}).get("lighting"),
-            "generation_status": (s.get("generation") or {}).get("status"),
-        },
+        "schema": VPT_SCHEMA,
+        "label_of": vpt_label_of,
+        "meta_of": vpt_meta_of,
+    },
+    {
+        # The 33 edited candidates for the images the 2026-09-09 pass flagged.
+        # A set of its own, not a replacement inside vpt_v5_vape: the production
+        # images are untouched, the original ratings stay intact and comparable,
+        # and nothing is promoted on the strength of a rating alone.
+        "set_id": "vpt_v5_revisions",
+        "title": "VPT v5 — edit revisions",
+        "subtitle": "Edited candidates for the flagged vape images",
+        "version": "v5-rev",
+        "source_path": (f"{ONEDRIVE}/VPT_v1/stimulus_set_v5/qc/edits_review_20260909"
+                        "/FINAL_FOR_RATINGS_20260912/finals"),
+        "glob": "*.json",
+        "keep": lambda s: s.get("condition") == "VAPE",
+        "instructions": (
+            "Edited versions of vape images from the earlier pass. Rate each on "
+            "what is in front of you, not against your memory of the original. "
+            "Same form as the vape set, so the two are comparable. " + VPT_FLAG_NOTE
+        ),
+        "schema": VPT_SCHEMA,
+        "label_of": vpt_label_of,
+        "meta_of": vpt_meta_of,
     },
 ]
 

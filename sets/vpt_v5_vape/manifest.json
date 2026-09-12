@@ -3,7 +3,7 @@
   "title": "VPT v5 \u2014 vape images",
   "subtitle": "Cue-reactivity stimuli, VAPE condition only",
   "version": "v5",
-  "built_at": "2026-09-09T19:05:13+00:00",
+  "built_at": "2026-09-12T22:09:42+00:00",
   "builder": "tools/build_sets.py",
   "source_path": "/Users/javery/Library/CloudStorage/OneDrive-OklahomaAandMSystem/Studies/VERA/fMRI_tasks/VPT_v1/stimulus_set_v5/images",
   "derivative": {
@@ -11,7 +11,7 @@
     "format": "jpeg",
     "quality": 85
   },
-  "instructions": "Judge each vape image on its own terms. Overall is the QC gate; the cue items ask whether the device reads as a vape and how much of the frame it commands. Flag anything a later batch check should catch.",
+  "instructions": "Judge each vape image on its own terms. Overall is the QC gate; the cue items ask whether the device reads as a vape and how much of the frame it commands. Flag anything a later batch check should catch. Device lighting: the device is lit like a product shot rather than by the scene. Vapour looks wrong: vapour is there but unconvincing, as against Vapour missing. Scene or anatomy error: bodies, hands or objects are wrong, as against Scene mismatch, which is a scene that does not fit the brief.",
   "schema_version": 1,
   "schema": [
     {
@@ -118,6 +118,21 @@
           "value": "scene_mismatch",
           "label": "Scene mismatch",
           "key": "m"
+        },
+        {
+          "value": "device_lighting",
+          "label": "Device lighting",
+          "key": "g"
+        },
+        {
+          "value": "vapour_wrong",
+          "label": "Vapour looks wrong",
+          "key": "w"
+        },
+        {
+          "value": "scene_error",
+          "label": "Scene or anatomy error",
+          "key": "e"
         }
       ]
     },

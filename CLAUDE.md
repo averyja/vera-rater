@@ -63,6 +63,7 @@ is stale for VPT) and writes the derivatives and manifests.
 |---|---|---|
 | `multicat_v5` | 150 (30 × face, food, object, scene, vape) | `multicat_localizer/multicat_v5_pipeline/set/images` |
 | `vpt_v5_vape` | 60 VAPE (30 SOLO, 30 SOCIAL) | `VPT_v1/stimulus_set_v5/images`, filtered `condition=VAPE` |
+| `vpt_v5_revisions` | 33 edited candidates | `VPT_v1/stimulus_set_v5/qc/edits_review_20260909/FINAL_FOR_RATINGS_20260912/finals` |
 
 **The MULTICAT images changed after the 2026-09-08 rating pass.** All 30 vapes
 were regenerated with `openai/gpt-image-2.5-sunburst`, and `food_14`,
@@ -161,8 +162,11 @@ Each manifest carries its own schema, so an item change is a builder change,
 not a front-end change.
 
 - **multicat_v5** — Overall (U/B/X) + comment. A clean image is one keypress.
-- **vpt_v5_vape** — Overall, Pleasantness, Artifacts, Cue identifiable, Cue
-  prominence (each 1–5), a flags row (V/D/L/T/M), comment.
+- **vpt_v5_vape** and **vpt_v5_revisions** — Overall, Pleasantness, Artifacts,
+  Cue identifiable, Cue prominence (each 1–5), a flags row
+  (V/D/L/T/M/**G/W/E**), comment. Both sets share `VPT_SCHEMA` in
+  `build_sets.py` so a rating of a revision stays comparable with the rating of
+  its original.
 
 Keys: digits fill the highlighted row and move down; U/B/X and flag letters
 work from any row; C comments, Escape leaves; Enter saves and advances; N next
@@ -175,6 +179,53 @@ bar is fixed to the bottom of the screen, the item rows stack one control per
 line, targets grow to 44 px on a coarse pointer, and the image panel is sticky
 so it stays in view while the rows are scrolled and tapped. Zoom is the `zoom`
 link in the image header or a tap on the image itself.
+
+## The revision set and three new flags (Jason, 2026-09-12)
+
+**`vpt_v5_revisions` is 33 edited candidates**, rated as a set of their own
+rather than swapped into `vpt_v5_vape`. The production images on OneDrive are
+untouched, the 120 ratings already collected on the 60 stay intact and
+comparable, and nothing is promoted on the strength of a rating alone. The
+candidates were aggregated out of six edit folders by
+`stimulus_pipeline_v5/aggregate_edit_candidates.py`, which also writes the
+sidecars this repo reads; `FINAL_FOR_RATINGS_20260912/README.md` beside them
+carries the review notes, including the five that are recompositions rather
+than edits and so have CONTROL twins that no longer match.
+
+**Three flags were added to the VPT schema** for the faults the 2026-09-09 pass
+kept describing in free text, so the next pass can count them:
+
+| Key | Value | Label |
+|---|---|---|
+| G | `device_lighting` | Device lighting |
+| W | `vapour_wrong` | Vapour looks wrong |
+| E | `scene_error` | Scene or anatomy error |
+
+Appended after the original five, which keep their positions and keys. G/W/E
+are clear of every key `app.js` reserves (U B X, C, N, Z, ?, digits).
+
+**No Google Form change was needed.** Flags are semicolon-joined into the single
+`flags` field, verified in the browser: pressing G W E writes
+`device_lighting;vapour_wrong;scene_error` into that one entry. Adding a
+*separate* question would have needed a new Form field and a new entry id in
+`config.js`; adding options to the flags row does not.
+
+**Two distinctions the instructions now spell out**, because each new flag sits
+next to an older one that means something else. `Vapour looks wrong` is vapour
+that is present but unconvincing, against `Vapour missing`. `Scene or anatomy
+error` is bodies, hands or objects being wrong, against `Scene mismatch`, which
+is a scene that does not fit the brief.
+
+**The schema change did not requeue anything.** `generated_at` and
+`source_sha256` are identical for all 60 images in `vpt_v5_vape` before and
+after, so no existing rating was invalidated. The `?v=` bump was deliberately
+skipped: `app.js`, `styles.css` and `config.js` are unchanged, and manifests and
+`sets/index.json` are already fetched with `?_=Date.now()`, so raters pick up
+the new set and the new flags without a new script.
+
+The candidate sidecars carry a `qc` block seeded with the five keys
+`ingest_ratings.py` writes. Without it that script finds "no qc block at all"
+and records nothing, silently.
 
 ## Backend status
 

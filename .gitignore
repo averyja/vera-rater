@@ -2,3 +2,4 @@
 archive/
 .claude/
 docs/
+__pycache__/
