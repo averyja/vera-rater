@@ -91,6 +91,14 @@ VPT_FLAGS = {
         {"value": "device_lighting", "label": "Device lighting",            "key": "g"},
         {"value": "vapour_wrong",    "label": "Vapour looks wrong",         "key": "w"},
         {"value": "scene_error",     "label": "Scene or anatomy error",     "key": "e"},
+        # Added 2026-09-13 (Jason). VAPE_SOCIAL_pair029 had one man appear twice
+        # in the same scene: different faces, but identical hair, clothing and
+        # build, so it read plainly as the same person. scene_error does not
+        # cover it — that is anatomy and objects being malformed, not a person
+        # being repeated — and a face-similarity check would miss it too. `p` is
+        # clear of the other flag keys (v d l t m g w e) and of everything
+        # app.js reserves (U B X, C, N, Z, ?, digits).
+        {"value": "duplicate_person", "label": "Same person twice",         "key": "p"},
     ],
 }
 

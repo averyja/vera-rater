@@ -200,6 +200,7 @@ kept describing in free text, so the next pass can count them:
 | G | `device_lighting` | Device lighting |
 | W | `vapour_wrong` | Vapour looks wrong |
 | E | `scene_error` | Scene or anatomy error |
+| P | `duplicate_person` | Same person twice |
 
 Appended after the original five, which keep their positions and keys. G/W/E
 are clear of every key `app.js` reserves (U B X, C, N, Z, ?, digits).
@@ -209,6 +210,15 @@ are clear of every key `app.js` reserves (U B X, C, N, Z, ?, digits).
 `device_lighting;vapour_wrong;scene_error` into that one entry. Adding a
 *separate* question would have needed a new Form field and a new entry id in
 `config.js`; adding options to the flags row does not.
+
+`duplicate_person` was added 2026-09-13 after `VAPE_SOCIAL_pair029`: one man
+appeared twice in the same scene with *different faces* but identical hair,
+clothing and build, so it read plainly as the same person. `scene_error` does
+not cover that — it is anatomy and objects being malformed, not a person being
+repeated — and a face-similarity check would miss it as well. Like G/W/E it
+needed no Google Form change, and it requeued nothing: `generated_at` and
+`source_sha256` are unchanged for all 60 images in `vpt_v5_vape` and all 33 in
+`vpt_v5_revisions`.
 
 **Two distinctions the instructions now spell out**, because each new flag sits
 next to an older one that means something else. `Vapour looks wrong` is vapour

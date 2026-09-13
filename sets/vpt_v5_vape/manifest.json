@@ -3,7 +3,7 @@
   "title": "VPT v5 \u2014 vape images",
   "subtitle": "Cue-reactivity stimuli, VAPE condition only",
   "version": "v5",
-  "built_at": "2026-09-12T22:09:42+00:00",
+  "built_at": "2026-09-13T05:06:30+00:00",
   "builder": "tools/build_sets.py",
   "source_path": "/Users/javery/Library/CloudStorage/OneDrive-OklahomaAandMSystem/Studies/VERA/fMRI_tasks/VPT_v1/stimulus_set_v5/images",
   "derivative": {
@@ -133,6 +133,11 @@
           "value": "scene_error",
           "label": "Scene or anatomy error",
           "key": "e"
+        },
+        {
+          "value": "duplicate_person",
+          "label": "Same person twice",
+          "key": "p"
         }
       ]
     },

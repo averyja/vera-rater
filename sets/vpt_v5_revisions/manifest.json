@@ -3,7 +3,7 @@
   "title": "VPT v5 \u2014 edit revisions",
   "subtitle": "Edited candidates for the flagged vape images",
   "version": "v5-rev",
-  "built_at": "2026-09-13T05:04:12+00:00",
+  "built_at": "2026-09-13T05:06:30+00:00",
   "builder": "tools/build_sets.py",
   "source_path": "/Users/javery/Library/CloudStorage/OneDrive-OklahomaAandMSystem/Studies/VERA/fMRI_tasks/VPT_v1/stimulus_set_v5/qc/edits_review_20260909/FINAL_FOR_RATINGS_20260912/finals",
   "derivative": {
@@ -133,6 +133,11 @@
           "value": "scene_error",
           "label": "Scene or anatomy error",
           "key": "e"
+        },
+        {
+          "value": "duplicate_person",
+          "label": "Same person twice",
+          "key": "p"
         }
       ]
     },
