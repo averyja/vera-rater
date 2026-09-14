@@ -123,6 +123,35 @@ images and their 188 rows stand; the 112 rows on the 56 replaced images are
 ignored by both until re-rated. The set is mixed-renderer in every category:
 52 sunburst, 98 gpt-image-2, recorded per sidecar in `generation.model`.
 
+**pair005 was regenerated on 2026-09-13, VAPE and CONTROL both**, and is the
+only pair in the 60 rendered by `openai/gpt-image-2.5-sunburst`; the other 59
+are `gpt-image-2`. `ad` had flagged the production VAPE ("Dashboard and layout
+of the car are wonky") and its decision was already `regenerate`.
+
+The root cause is worth remembering: the prompt fixed the camera ("just outside
+the driver's-side window") but never the **car's orientation**, and either
+facing direction satisfies that, so the draw chose. Outside the driver's door of
+a left-hand-drive car the nose is to the camera's left, so the driver faces
+**left** in frame with the wheel between her and the left edge. Production, the
+CONTROL twin and two intermediate regens all faced right — the passenger-side
+reading. Naming the nose direction fixed it. A horizontal flip was tried first
+and reverted: it mirrored the device wordmark and could not move a mid-dash
+wheel.
+
+The CONTROL got byte-identical prompt edits so the pair agrees on viewing angle,
+which the production pair did not. They remain different-looking women: all 60
+pairs are `independent_t2i`, so identity has never matched and `identity_match`
+is unfilled set-wide. Generating the CONTROL with the VAPE as `input_images`
+would be the route to a genuinely matched pair, and is not how any pair was
+built.
+
+Pre-promotion images and sidecars are at `qc/pair005_preproduction_20260913/`,
+the candidates and their prompts at `qc/pair005_regen_20260913/`.
+
+`index.csv` was not updated and its prompt column for this pair is now further
+out of date. It was already stale for VPT; the sidecars are authoritative and
+`build_sets.py` reads only those.
+
 ### Rules for regenerating (Jason, 2026-09-10)
 
 - **Never regenerate an image whose `qc.decision` is `accept`, and never edit
