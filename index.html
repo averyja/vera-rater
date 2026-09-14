@@ -9,7 +9,7 @@
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <link rel="manifest" href="assets/site.webmanifest">
 <!-- bump ?v= on every deploy so raters never run a stale script -->
-<link rel="stylesheet" href="styles.css?v=20260910a">
+<link rel="stylesheet" href="styles.css?v=20260913b">
 </head>
 <body>
 
@@ -20,13 +20,21 @@
   <p>Stimulus QC for the VERA study. Pick a set, judge each image, move on.
      Your place is kept, so you can stop and come back on any device.</p>
 
-  <label class="field">
-    Rater code
-    <input id="raterInput" autocomplete="off" spellcheck="false"
-           placeholder="e.g. jaa" maxlength="12">
-  </label>
-  <p id="raterErr" class="muted" style="color:var(--bad)"></p>
-  <button id="startBtn" class="primary">Continue</button>
+  <div id="raterBlock">
+    <label class="field">
+      Rater code
+      <input id="raterInput" autocomplete="off" spellcheck="false"
+             placeholder="e.g. jaa" maxlength="12">
+    </label>
+    <p id="raterErr" class="muted" style="color:var(--bad)"></p>
+    <button id="startBtn" class="primary">Continue</button>
+  </div>
+
+  <p id="viewBanner" class="banner" hidden>
+    <b>View only.</b> Browse the images without rating. Nothing is saved and no
+    rater code is needed.
+  </p>
+  <p class="muted"><a id="viewToggle" href="?view=1">view only</a></p>
 
   <div id="setList" class="setlist"></div>
   <p id="backendNote" class="muted"></p>
@@ -42,6 +50,7 @@
     </div>
     <div class="spacer"></div>
     <span class="chip" id="raterChip"></span>
+    <span class="chip" id="viewChip" hidden>view only</span>
     <button class="chip link" id="hintToggle">keys</button>
     <button class="chip link" id="backBtn">sets</button>
   </header>
@@ -86,7 +95,7 @@
         </div>
       </div>
 
-      <div class="verifyrow">
+      <div class="verifyrow" id="verifyRow">
         <button class="secondary" id="verifyBtn">Verify saves</button>
         <span class="proglabel" id="verifyOut" style="margin:0"></span>
       </div>
@@ -99,7 +108,8 @@
         <b>Enter</b> save and go to the next unrated image<br>
         <b>N</b> next unrated · <b>← →</b> back and forward<br>
         <b>Z</b> zoom the image · <b>?</b> this list<br>
-        On a touch screen: tap the buttons, tap the image to zoom.
+        On a touch screen: tap the buttons, tap the image to zoom.<br>
+        <b>View only</b> (<code>?view=1</code>): ← → move, Z zoom. Nothing saves.
       </div>
     </div>
   </main>
@@ -128,8 +138,8 @@
   <p class="muted">Nothing was lost — ratings already made are still cached in this browser.</p>
 </div>
 
-<script src="config.js?v=20260910a"></script>
-<script src="backend.js?v=20260910a"></script>
-<script src="app.js?v=20260910a"></script>
+<script src="config.js?v=20260913b"></script>
+<script src="backend.js?v=20260913b"></script>
+<script src="app.js?v=20260913b"></script>
 </body>
 </html>

@@ -21,6 +21,7 @@
     records: {},        // imageId -> { values:{}, state:'…', at:iso }
     activeRow: 0,
     zoom: false,
+    viewOnly: false,        // browse a set without rating: no rater, no writes
     startedAt: null,
     ratedThisSession: 0,
   };
@@ -116,15 +117,18 @@
     }
 
     const params = new URLSearchParams(location.search);
+    S.viewOnly = params.get('view') === '1';
     const rater = params.get('rater') || localStorage.getItem(RATER_KEY) || '';
     $('#raterInput').value = rater;
+    applyViewOnly();
     renderPicker();
     show('#picker');
-    $('#raterInput').focus();
+    if (!S.viewOnly) $('#raterInput').focus();
 
     const wantSet = params.get('set');
-    if (rater && wantSet && index.sets.some(s => s.set_id === wantSet)) {
-      if (acceptRater(rater)) startSet(wantSet);
+    if (wantSet && index.sets.some(s => s.set_id === wantSet)) {
+      if (S.viewOnly) startSet(wantSet);
+      else if (rater && acceptRater(rater)) startSet(wantSet);
     }
   }
 
@@ -158,10 +162,29 @@
       b.querySelector('.meta').textContent = s.subtitle;
       b.querySelector('.count').textContent = `${s.count} images`;
       b.addEventListener('click', () => {
+        if (S.viewOnly) { startSet(s.set_id); return; }
         if (acceptRater($('#raterInput').value)) startSet(s.set_id);
       });
       list.appendChild(b);
     }
+  }
+
+  /* View-only: browse the images, rate nothing, write nothing. Entered with
+     ?view=1. No rater code is asked for and no backend call is made at all,
+     so a link can be handed to someone without touching the data. */
+  function applyViewOnly() {
+    const on = S.viewOnly;
+    $('#raterBlock').hidden = on;
+    $('#viewBanner').hidden = !on;
+    $('#viewChip').hidden = !on;
+    $('#raterChip').hidden = on;        // empty pill otherwise: no rater in view mode
+    $('#viewToggle').textContent = on ? 'rate instead' : 'view only';
+    $('#viewToggle').href = on ? '?' : '?view=1';
+    // the rating column and its controls have no meaning without a rater
+    for (const sel of ['#items', '#saveState', '#verifyRow']) {
+      const el = $(sel); if (el) el.hidden = on;
+    }
+    $('#saveNextBtn').hidden = on;
   }
 
   // ── loading a set ────────────────────────────────────────────────────────
@@ -179,10 +202,25 @@
     }
 
     const ids = S.manifest.images.map(i => i.id);
-    S.order = shuffledOrder(ids, S.rater, setId);
-    S.records = loadDraft();
     S.startedAt = Date.now();
     S.ratedThisSession = 0;
+
+    if (S.viewOnly) {
+      // Manifest order, not the per-rater shuffle: browsing wants a stable,
+      // predictable sequence. No draft is read and no backend call is made.
+      S.order = ids;
+      S.records = {};
+      $('#resumeNote').textContent = '';
+      buildRows();
+      applyViewOnly();
+      S.idx = 0;
+      show('#rater');
+      render();
+      return;
+    }
+
+    S.order = shuffledOrder(ids, S.rater, setId);
+    S.records = loadDraft();
 
     // Merge the backend's view of what is already saved. A record the server
     // has but this browser does not becomes 'saved' with no local values, so
@@ -489,6 +527,12 @@
       if (i === S.idx) seg.classList.add('cur');
     });
 
+    if (S.viewOnly) {
+      $('#progLeft').textContent = `${S.manifest.title} — browsing, nothing is saved`;
+      $('#progRight').textContent = `${S.idx + 1} / ${S.order.length}`;
+      return;
+    }
+
     const done = saved + queued;
     let left = '';
     if (S.ratedThisSession >= 3) {
@@ -506,6 +550,7 @@
   // ── saving ───────────────────────────────────────────────────────────────
 
   async function saveCurrent() {
+    if (S.viewOnly) return false;      // nothing is ever written in view mode
     const missing = missingRequired();
     if (missing.length) {
       $('#saveState').className = 'save failed';
@@ -545,6 +590,7 @@
   }
 
   async function saveAndAdvance() {
+    if (S.viewOnly) { go(1); return; }
     const ok = await saveCurrent();
     if (!ok) return;                     // a failed save blocks advancing
     const next = S.order.findIndex((id, i) => i > S.idx && !isDone(id));
@@ -624,6 +670,16 @@
 
     const items = inputItems();
     const key = ev.key.toLowerCase();
+
+    if (S.viewOnly) {
+      // Navigation, zoom and the key list only. Rating keys do nothing, so a
+      // stray keypress while browsing cannot set a value that is never saved.
+      if (ev.key === 'ArrowLeft')  { ev.preventDefault(); go(-1); return; }
+      if (ev.key === 'ArrowRight' || ev.key === 'Enter') { ev.preventDefault(); go(1); return; }
+      if (key === 'z') { ev.preventDefault(); toggleZoom(); return; }
+      if (key === '?') { ev.preventDefault(); $('#hint').hidden = !$('#hint').hidden; return; }
+      return;
+    }
 
     if (ev.key === 'Enter') { ev.preventDefault(); saveAndAdvance(); return; }
     if (ev.key === 'ArrowDown') {

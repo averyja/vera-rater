@@ -172,6 +172,16 @@ Keys: digits fill the highlighted row and move down; U/B/X and flag letters
 work from any row; C comments, Escape leaves; Enter saves and advances; N next
 unrated; ← → move; Z zoom; ? key list.
 
+**View-only mode** (`?view=1`, or the "view only" link on the picker) browses a
+set without rating: no rater code is asked for, the rating rows, Save & next and
+Verify are hidden, and **no backend call is made at all** — no form post, no
+Sheet read, nothing written to localStorage. Order is the manifest's, not the
+per-rater shuffle, so browsing is predictable. Keys are ← → to move, Enter to
+advance, Z to zoom; the rating keys are deliberately inert so a stray press
+cannot set a value that is never saved. Verified 2026-09-13 with zero
+google.com requests on the page. Ratings are not shown (Jason, 2026-09-13), so
+a view-only link reveals nothing about the QC verdicts.
+
 **Touch.** A phone has no Enter key, so every keyboard action also exists as a
 button in `#actionbar` — Save & next, and back/forward arrows — wired to the
 same functions the keys call so the two routes cannot drift. Below 760 px that
