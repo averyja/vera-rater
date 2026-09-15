@@ -251,6 +251,26 @@ def aggregate(records):
 
 # ── writing ──────────────────────────────────────────────────────────────
 
+def read_override(side_path):
+    """qc.decision_override, if the sidecar carries one.
+
+    Shape: {"decision": "accept"|"review"|"regenerate", "by": "jaa",
+            "reason": "...", "at": ISO}. Written by hand (edit_prompt.py-style,
+    with a history event), never by this script. A malformed one is an error,
+    not a silent fall-through."""
+    if not os.path.exists(side_path):
+        return None
+    with open(side_path) as fh:
+        qc = json.load(fh).get("qc") or {}
+    ov = qc.get("decision_override")
+    if ov is None:
+        return None
+    if not isinstance(ov, dict) or ov.get("decision") not in OVERALL_TO_DECISION.values():
+        sys.exit(f"ERROR: {side_path}: qc.decision_override must be a dict with "
+                 f"decision in {sorted(set(OVERALL_TO_DECISION.values()))}; got {ov!r}")
+    return ov
+
+
 def write_sidecar(path, qc_updates, backup_dir, dry_run):
     """Fill existing qc keys only. Returns (changed_keys, skipped_keys)."""
     with open(path) as fh:
@@ -392,12 +412,18 @@ def main():
                 "overalls", "disagreement", "cue_visible", "artifact_severity",
                 *[f"mean_{f}" for f in NUMERIC_FIELDS], "notes"]
 
-        disagreements, agg_by_image = [], {}
+        disagreements, agg_by_image, overridden = [], {}, []
         rows_out = []
         for image_id in all_ids:
             if image_id not in rated:
                 continue
             agg = aggregate(rated[image_id])
+            ov = read_override(os.path.join(spec["source_path"], f"{image_id}.json"))
+            if ov:
+                # Jason's call on record in the sidecar beats the rating rule.
+                # The ratings still show in `overalls`; only `decision` is his.
+                agg["decision"] = ov["decision"]
+                overridden.append((image_id, ov))
             agg_by_image[image_id] = agg
             if agg["_disagree"]:
                 disagreements.append((image_id, agg["_overalls"]))
@@ -428,6 +454,12 @@ def main():
         for r in rows_out:
             tally[r["decision"] or "(no overall)"] += 1
         print("  decisions: " + ", ".join(f"{v} {k}" for k, v in sorted(tally.items())))
+        if overridden:
+            print(f"  {len(overridden)} decision(s) taken from qc.decision_override "
+                  f"instead of the rating rule:")
+            for image_id, ov in overridden:
+                print(f"    {image_id}: {ov['decision']} ({ov.get('by', '?')}, "
+                      f"{str(ov.get('at', ''))[:10]}) — {ov.get('reason', '')}")
         if disagreements:
             print(f"  {len(disagreements)} image(s) where raters disagreed on Overall:")
             for image_id, overalls in disagreements[:10]:

@@ -123,6 +123,18 @@ images and their 188 rows stand; the 112 rows on the 56 replaced images are
 ignored by both until re-rated. The set is mixed-renderer in every category:
 52 sunburst, 98 gpt-image-2, recorded per sidecar in `generation.model`.
 
+**A sidecar can overrule the rating rule.** `qc.decision_override`
+(`{decision, by, reason, at}`, written by hand with a `decision_overridden`
+history event, never by the script) makes `tools/ingest_ratings.py` take
+`decision` from it instead of from "worst rating wins", and the report says
+which images it did that for. The ratings stay untouched and still appear in
+`overalls`. Used on 2026-09-15 for `object_22`, `scene_practice_02` and
+`vape_10`: ad borderline with no comment, jaa usable, Jason accepted all three
+rather than regenerate. MULTICAT stood at 149 accept, 0 review that day, with
+seven re-rates outstanding (scene_23 for both; food_14, object_11,
+object_practice_04, vape_06, vape_07 for ad), and the 150 were deployed to the
+Asokha task folder.
+
 **pair005 was regenerated on 2026-09-13, VAPE and CONTROL both**, and is the
 only pair in the 60 rendered by `openai/gpt-image-2.5-sunburst`; the other 59
 are `gpt-image-2`. `ad` had flagged the production VAPE ("Dashboard and layout
